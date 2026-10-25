@@ -5,6 +5,8 @@
 
 This repository is a personal university driven by Claude Code. The engine (this file, `.claude/`, `tools/`, `templates/`) is subject-independent; the subject lives in `course.md`, the student in `profile.md`. Read both before acting.
 
+Engine-owned files (`CLAUDE.md`, `README.md`, `.gitignore`, `requirements.txt`, `.claude/`, `tools/`, `templates/`, `docs/`) are never edited in a course: course-specific instructions go in `course.md` § Special rules, personal notes in `CLAUDE.local.md` (git-ignored). Course-specific ignore rules (large files, local data) go in a course-owned `work/.gitignore` or in `.git/info/exclude`, never in the engine `.gitignore`. A custom decision-record template lives at `program/decision-record.md` (default: `templates/decision-record.md`).
+
 ## Roles and who reads what
 
 | Role | Where | Reads `.faculty/`? |
@@ -15,7 +17,7 @@ This repository is a personal university driven by Claude Code. The engine (this
 | Teaching assistant (office hours) | skill `/ask`, main session | **never** |
 | Examiner (oral exam) | skill `/oral`, main session | **only** `.faculty/oral-guides/<id>-guide.md`, never a rubric |
 
-- All subagents run on `model: sonnet`.
+- Subagents run on the model named in `profile.md` § Subagent model (default `sonnet`; `opus` or `haiku` allowed). Skills pass it explicitly when launching an agent; the agents' own frontmatter keeps `model: sonnet` as the default.
 - Every rubric totals **exactly 20 points** and is written together with the assignment, before any student work exists. The grader is never lenient: a 16 must be worth a 16.
 - The teaching assistant **never** gives the solution (three-level hint ladder).
 - Lessons teach (motivation, examples, counter-examples, code, Mermaid diagrams); they are not book summaries.
@@ -27,8 +29,8 @@ Engine names (commands, IDs, types, statuses, folders, tool output) are English.
 
 ## Scholarship rules
 
-- Blocking types, coefficients, maximum attempts and the module/exam weights come from `program/rules.json`; defaults are in `templates/rules.json`. A `program/rules.json` that overrides `coefficients` must list **every** work type (the tool rejects a partial table).
-- Fixed in the engine: 20-point scale, pass mark 10, a resit when a completed module is below 10, module average = max(average, resit). The `resit` coefficient therefore has no effect (the resit replaces the module average when higher). Exam and mock-oral coefficients weight the exam part of the semester (mock orals: coefficient 0 by default, so excluded).
+- Blocking types, coefficients, maximum attempts and the module/exam weights come from `program/rules.json`; defaults are in `templates/rules.json`. Each top-level key of `program/rules.json` (`blocking`, `coefficients`, `max_attempts`, `weights`) replaces the default wholesale: copy the whole block from `templates/rules.json` and edit it. `coefficients` must list **every** work type (the tool rejects a partial table).
+- Fixed in the engine: 20-point scale, a grade ≥ 10 passes, for repeatable work the best grade is kept, a resit when a completed module is below 10 (a module is complete only once no work in it can still be resubmitted), module average = max(average, resit). The `resit` coefficient therefore has no effect (the resit replaces the module average when higher). Exam and mock-oral coefficients are applied (weighted exam mean); a mock oral counts only if its coefficient is > 0 (0 by default).
 - A reading linked with `validated_by` to a lab/homework is validated automatically when that work is graded at 10/20 or more; `finish` also works by hand.
 - Blocking items (by default `lab`, `written-exam`, `oral-exam`, `resit`) stop `/lesson` until submitted. Readings and homework don't block.
 - **No due dates, no lateness, no penalties.** The student progresses at their own pace.

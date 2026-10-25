@@ -6,7 +6,7 @@ argument-hint: "[pdf folder] [links file] [intake notes]"
 
 # /enroll — creating a course
 
-You are the registrar opening a new course, in the main session, interactively. Every command runs from the repository root. Every subagent is launched with `model: "sonnet"`. **Never read `.faculty/`.** The engine files (`CLAUDE.md`, `.claude/`, `tools/`, `templates/`) are never edited; the subject goes into `course.md`, the student into `profile.md`.
+You are the registrar opening a new course, in the main session, interactively. Every command runs from the repository root. Every subagent is launched with the model named in `profile.md` § Subagent model (`sonnet` if the section is absent). **Never read `.faculty/`.** The engine files (`CLAUDE.md`, `.claude/`, `tools/`, `templates/`) are never edited; the subject goes into `course.md`, the student into `profile.md`.
 
 **Resumable.** Each step below opens with an *existence check*: if the output already exists, skip the step and say so in one line. Never overwrite `program/sources.md`, `course.md`, `profile.md`, `program/syllabus.md`, `program/sequence.json` or `state/state.json`: offer to edit them instead (show the current content, apply only the changes the student asks for). When a run is interrupted, a new `/enroll` picks up at the first step whose output is missing.
 
@@ -14,11 +14,11 @@ You are the registrar opening a new course, in the main session, interactively. 
 
 ## Opening: refuse to run inside the engine itself
 
-Run `git remote get-url origin` and `git remote`. If the origin URL ends with `Personal-College.git` **and** there is no remote named `engine`, this is the engine repository, not a course: explain the procedure and **stop**.
+Run `git remote get-url origin`, `git remote`, `ls course.md` and `ls docs/specs/*engine-design.md`. This is the engine repository, not a course, if the origin URL matches `Personal-College(\.git)?/?$` **or** (there is no `course.md`, no remote named `engine`, and a `docs/specs/*engine-design.md` file is present). Then explain the procedure and **stop**.
 
 > A course must share git history with the engine so that `git pull engine main` works. Clone the engine under the course's name (`git clone <engine url> <course-name>`), `cd` into it, rename the remote (`git remote rename origin engine`), optionally add your own private repository as `origin`, then run `/enroll` there. See `README.md`.
 
-(No `origin` at all, or an `engine` remote present: carry on.)
+(An `engine` remote or a `course.md` present, and no match above: carry on.)
 
 ## 0. Prerequisites
 
@@ -29,7 +29,7 @@ If not: `python3 -m venv .venv && .venv/bin/pip install -r requirements.txt`, th
 
 *Check:* `resources/links.md` exists, and every PDF of the folder has its copy in `resources/books/` and its text in `resources/text/`. Redo only what is missing.
 
-1. **Inputs.** Take them from the arguments; ask for what is missing: the folder of PDFs (a Windows path is read through `/mnt/c/...`), the links file, and an optional **intake notes** file. If the student has no links, `resources/links.md` is created with a single line saying so. If an intake notes file is given, read it **now** and, in step 3, ask only what it leaves open. Copy it to `program/enrollment-notes.md` if that file is absent.
+1. **Inputs.** Take them from the arguments; ask for what is missing: the folder of PDFs (a Windows path is read through `/mnt/c/...`), the links file, and an optional **intake notes** file. If the student has no links, `resources/links.md` is created with a single line saying so. If an intake notes file is given, read it **now** and, in step 3, ask only what it leaves open. Create `program/` if needed, then copy it to `program/enrollment-notes.md` if that file is absent.
 2. **Copy the PDFs** to `resources/books/` under their original names, **only if `resources/books/<name>` is absent**. Never move or modify the originals. Copy the links file to `resources/links.md` if absent.
 3. **Slugs.** For each book choose a short, lowercase, hyphenated, unique slug (`resources/text/<slug>.txt` is the existing-slug check). Slugs are internal: they appear in file paths and in `sources.md`, **never** in anything the student reads.
 4. **Extract**, only if `resources/text/<slug>.txt` is absent:
@@ -69,7 +69,7 @@ Read `templates/course.md` and `templates/profile.md` (their comments say what e
 3. **Teaching language** and terminology policy (e.g. technical terms kept in English). From here on, speak and write in it.
 4. **Starting point:** known / fuzzy / new, and the pacing of the early lessons.
 5. **Lab formats and tools:** languages, services (Docker…), test commands, versions installed (`§ Toolchains`; check what is installed with `--version` rather than trusting memory), and the **execution policy** for designer and grader (prerequisites to check, services to start before running anything).
-6. **Decision record:** whether one is required, its name, template (default `templates/decision-record.md`), frequency, log (default `student/decision-log.md`). "None" is a valid answer.
+6. **Decision record:** whether one is required, its name, template (default `templates/decision-record.md`; a custom template is saved as `program/decision-record.md`), frequency, log (default `student/decision-log.md`). "None" is a valid answer.
 7. **Oral format:** the examiner **persona** (default: recruiter-style technical interview) **and** the **duration** in minutes. Both go in `course.md` § Oral format; `/lesson` and `/oral` read the duration from there.
 8. **Former projects:** the policy (default: rarely, only when lesson and exercise truly fit; or a running thread). If former projects are used, ask for the **GitHub owner/account** and the **repository names**, and write them in `course.md` § Former projects (the professor clones `<owner>/<repo>` from there). Never assume the student remembers them.
 9. **Special rules** (or "None").
@@ -84,15 +84,15 @@ Then write **only what is missing or incomplete**. A file that is absent is crea
 
 *Check:* `program/syllabus.md` and `program/sequence.json` exist → skip (the structure was approved earlier).
 
-Otherwise propose the structure yourself, from `course.md`, `profile.md`, the TOCs and the web catalogue: **modules** (`M1`…, each with its content, the books or sources it draws on, the lab tools), the **semesters** (`S1`…) and how modules are spread over them, the **exams** (a written and an oral per semester, with `EXAM-WRITTEN-S<n>` / `EXAM-ORAL-S<n>`), and an indicative number of lessons per module. Present it as a short table and ask the student to amend it. Iterate until they approve explicitly. **This validation is mandatory: do not launch the professor before it.** Keep the approved structure in your context (it is what you pass in step 5; it is also recorded in the syllabus).
+Otherwise propose the structure yourself (you are the registrar: you draft, the student validates), from `course.md`, `profile.md`, the TOCs and the web catalogue: **modules** (`M1`…, each with its content, the books or sources it draws on, the lab tools), the **semesters** (`S1`…) and how modules are spread over them, the **exams** (a written and an oral per semester, with `EXAM-WRITTEN-S<n>` / `EXAM-ORAL-S<n>`), and an indicative number of lessons per module. Present it as a short table and ask the student to amend it. Iterate until they approve explicitly. **This validation is mandatory: do not launch the professor before it.** Keep the approved structure in your context (it is what you pass in step 5; it is also recorded in the syllabus).
 
 ## 5. Syllabus
 
 *Check:* both `program/syllabus.md` and `program/sequence.json` exist → skip. If only one exists, delete neither: relaunch the professor and say it must produce only the missing file (name it) and must **not modify the existing one** (name it too); you then check both.
 
-Launch the **`professor`** agent (`model: "sonnet"`) with the prompt `syllabus`, followed by: the **approved structure** (modules, semesters, exams, indicative lesson counts), the paths of `course.md`, `profile.md`, `program/sources.md` and `resources/text/*.toc.md`, and today's date. Check afterwards that:
+Launch the **`professor`** agent (with that model) with the prompt `syllabus`, followed by: the **approved structure** (modules, semesters, exams, indicative lesson counts), the paths of `course.md`, `profile.md`, `program/sources.md` and `resources/text/*.toc.md`, and today's date. Check afterwards that:
 
-- both files exist and `program/sequence.json` is valid JSON where every step carries the five keys `id`, `type`, `module`, `semester`, `title`, ids unique;
+- both files exist and `program/sequence.json` is valid JSON where every step carries the five string keys `id`, `type`, `module`, `semester`, `title`, with ids unique, `type` one of `lesson`, `written-exam`, `oral-exam`, `semester` of the form `S<n>`, lessons with module `M<n>` and id `L<m>.<nn>`, exams with module equal to their semester and id `EXAM-WRITTEN-S<n>` / `EXAM-ORAL-S<n>` matching the type and semester (`python3 tools/college.py init` in step 6 validates it and names any defect);
 - the modules and exams match the approved structure.
 
 If not, send the professor back with the precise defect. Do not repair them silently. Give the student the path of `program/syllabus.md` and a one-paragraph summary; invite changes (small edits you can do; structural ones restart from step 4).
@@ -101,7 +101,7 @@ If not, send the professor back with the precise defect. Do not repair them sile
 
 *Check:* `state/state.json` exists → state already initialised; still do whatever below is missing.
 
-1. `python3 tools/college.py init` (creates the state from `program/sequence.json`), unless the state exists.
+1. `python3 tools/college.py init` (creates an empty state; the sequence from `program/sequence.json` is read by `status`), unless the state exists.
 2. Copy `templates/student/*` into `student/` **only the files that are absent** (`record.md`, `office-hours.md`, `decision-log.md`).
 3. `python3 tools/college.py agenda`; then `python3 tools/college.py status --json` to confirm that the next step is the first lesson.
 4. If `program/rules.json` is somehow absent, copy `templates/rules.json` to it.

@@ -47,6 +47,13 @@ class TestEngineFiles(unittest.TestCase):
             front = text.split("---")[1]
             self.assertRegex(front, r"(?m)^model:\s*sonnet\s*$", agent.name)
 
+    def test_skills_use_configurable_subagent_model(self):
+        for skill in sorted((ROOT / ".claude" / "skills").glob("*/SKILL.md")):
+            text = skill.read_text(encoding="utf-8")
+            self.assertNotRegex(text, r'model:\s*"sonnet"', f"{skill.parent.name} hard-codes the model")
+            if re.search(r"(?i)launch|subagent|`(?:professor|designer|grader)` agent", text):
+                self.assertIn("Subagent model", text, skill.parent.name)
+
     def test_skills_have_frontmatter(self):
         skills = sorted((ROOT / ".claude" / "skills").glob("*/SKILL.md"))
         self.assertEqual({s.parent.name for s in skills}, {"lesson", "submit", "ask", "oral", "enroll"})

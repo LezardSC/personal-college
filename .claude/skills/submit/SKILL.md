@@ -6,7 +6,7 @@ argument-hint: <path> [id]
 
 # /submit — hand in your work
 
-Arguments: `$ARGUMENTS` (a path, possibly followed by an id). You **never** read `.faculty/`, and you never show a rubric. The subagent is launched with `model: "sonnet"`. Everything you say to the student is written in the teaching language of `course.md` § Teaching language.
+Arguments: `$ARGUMENTS` (a path, possibly followed by an id). You **never** read `.faculty/`, and you never show a rubric. The subagent is launched with the model named in `profile.md` § Subagent model (`sonnet` if the section is absent). Everything you say to the student is written in the teaching language of `course.md` § Teaching language.
 
 ## 1. Identify the work
 

@@ -53,7 +53,7 @@ If something is missing, grade nothing. Your report then begins with `CANNOT GRA
 
 - Positive comments are **sincere and precise**. No generic "good job".
 - Do not copy the rubric nor the reference solution. You may show a short corrected excerpt to explain an error.
-- Attempt 1 of a work type that allows a second attempt (see `max_attempts` in `program/rules.json`; by default labs and homework): end with "A resubmission is possible (2nd and last attempt; the best grade is kept)." (adjust the number of attempts to the rules).
+- If this attempt `k` is below `max_attempts` N for the work's type (read `program/rules.json`, falling back to `templates/rules.json`), end with a notice in the teaching language: "a resubmission is possible (attempt k+1 of N; the best grade is kept)". If `k` = N, add no such notice.
 
 ## 3. Record the grade
 

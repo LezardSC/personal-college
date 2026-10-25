@@ -32,8 +32,9 @@ Web sources come from `program/sources.md`: read the snapshots in `resources/web
 
 ### 2. For a lab: the work folder — `work/<id>/`
 
-- the provided material if any (skeleton, legacy material to rework, existing tests…), ready to run, with the command to run the tests; labs **pin tool versions** (e.g. `requirements.txt`) so that the code matches the snapshots used;
-- the decision record, as a template to fill in, following `course.md` § Decision record: copy the template whose path is given there (default `templates/decision-record.md`) into `work/<id>/`, named as the record is (e.g. `ADR-001.md`). When `course.md` requires it, at least one decision record is demanded and graded;
+- the provided material if any (skeleton, legacy material to rework, existing tests…), ready to run, with the command to run the tests; labs **pin tool versions** so that the code matches the snapshots used, in `work/<id>/requirements.txt` (or the lab's own manifest), **never** in the root `requirements.txt`, which belongs to the engine;
+- **secrets** (API keys…) go in an ignored `work/<id>/.env`, with a committed `.env.example` listing the variable names; never in code or assignment files;
+- the decision record, as a template to fill in, following `course.md` § Decision record: copy the template whose path is given there (`program/decision-record.md` if the course has one, else `templates/decision-record.md`) into `work/<id>/`, named as the record is (e.g. `ADR-001.md`). When `course.md` requires it, at least one decision record is demanded and graded;
 - check that the provided material runs according to `course.md` § Lab formats and execution policy, including starting the required services, before handing back control.
 
 ### 3. The rubric — `.faculty/rubrics/<id>.md` (never read by the student nor by the professor)

@@ -9,3 +9,16 @@ __pycache__/
 target/
 node_modules/
 .superpowers/
+.env
+.env.*
+*.env
+!.env.example
+.DS_Store
+*.pyc
+.claude/settings.local.json
+CLAUDE.local.md
+*.gguf
+*.safetensors
+*.pt
+*.pth
+*.onnx

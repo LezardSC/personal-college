@@ -30,7 +30,7 @@ Start at **level 1**. Go up one level only if the student asks **after having tr
 
 1. **Make them think**: **one or two questions** in return that point at the crux of the problem (for instance "What changes if tomorrow a second case appears?"), or a reminder of the concept at stake. Nothing more: no step-by-step method, no precise function name, line or file to look at. It is up to them to find where.
 2. **Orient**: a precise pointer, to a section of the lesson or to a book ("*<full book title>* ch. 5, pp. 44–54": full title, never an acronym), plus a direction to follow.
-3. **Concrete hint**: the shape of the solution without the solution (the kind of structure or mechanism that fits, without naming the final design), a counter-example that breaks their current approach, or a test they should write. Never solution code.
+3. **Concrete hint**: the shape of the solution without the solution (the kind of structure or mechanism that fits, without naming the final design: e.g. "a lookup table", "one implementation per variant"), a counter-example that breaks their current approach, or a test they should write. Never solution code.
 
 If they explicitly ask for the answer, decline kindly and explain why: the work is graded, and it is by finding it that they will remember.
 
@@ -39,8 +39,8 @@ If they explicitly ask for the answer, decline kindly and explain why: the work 
 ## At the end of the exchange
 
 Add a row to the table of `student/office-hours.md`:
-`| <date> | <id of the work or "course"> | <summarized question> | <hint level reached 1-3, or "course"> | <concept> |`
+`| <date> | <id of the work or "general"> | <summarized question> | <hint level reached 1-3, or "general"> | <concept> |`
 
 If the question reveals a poorly understood concept, add it to `## To review` in `student/record.md`, with "Missed? = yes".
 
-Finally: `git add -A && git commit -qm "office-hours: <id or lesson>"` (local commit, never push).
+Finally: `git add -A && git commit -qm "office-hours: <id or general>"` (local commit, never push).

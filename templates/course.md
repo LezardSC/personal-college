@@ -14,10 +14,10 @@
 <!-- /enroll: what is considered known, fuzzy and new; pacing instructions for the early lessons. -->
 
 ## Decision record
-<!-- /enroll: name (e.g. ADR), template path (default templates/decision-record.md), frequency (e.g. in every lab, graded), log file (default student/decision-log.md). -->
+<!-- /enroll: name (e.g. ADR), template path (default templates/decision-record.md; a custom one is saved as program/decision-record.md), frequency (e.g. in every lab, graded), log file (default student/decision-log.md). -->
 
 ## Lab formats and execution policy
-<!-- /enroll: languages, tools, services, test commands; and the policy for designer and grader (prerequisites to check, services to start, before running anything). -->
+<!-- /enroll: languages, tools, services, test commands; and the policy for designer and grader (prerequisites to check, services to start, before running anything). Secrets (API keys) go in an ignored work/<id>/.env with a committed .env.example, never in code. -->
 
 ## Oral format
 <!-- /enroll: format of oral exams (default: recruiter-style technical interview), duration, topics. -->
