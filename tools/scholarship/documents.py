@@ -14,6 +14,10 @@ def _fmt(n: float | None) -> str:
     return "—" if n is None else f"{n:g}"
 
 
+def _cell(text: str) -> str:
+    return text.replace("|", "\\|")
+
+
 def _verdict(average: float | None) -> str:
     return "" if average is None else (" — passed" if average >= PASS_MARK else " — not passed")
 
@@ -25,7 +29,7 @@ def agenda(state: dict, sequence: list[dict], today: date, rules: dict) -> str:
     if todo:
         lines += ["| Id | Type | Title | Hours | Blocking | Assignment |", "|---|---|---|---|---|---|"]
         for i in todo:
-            lines.append(f"| {i['id']} | {i['type']} | {i['title']} | {i['hours']:g} "
+            lines.append(f"| {i['id']} | {i['type']} | {_cell(i['title'])} | {i['hours']:g} "
                          f"| {'yes' if i['blocking'] else 'no'} | [{i['assignment']}]({i['assignment']}) |")
     else:
         lines.append("Nothing to submit right now.")
@@ -40,12 +44,16 @@ def agenda(state: dict, sequence: list[dict], today: date, rules: dict) -> str:
         lines.append("No program loaded (`program/sequence.json` missing or empty).")
     else:
         lines.append(f"**{step['id']}** — {step['title']} ({step['type']}, {step['module']}).")
-        if st["exam_to_take"]:
+        if not st["can_advance"]:
+            if st["blocking"]:
+                lines += ["", "`/lesson` is blocked until the blocking items above are submitted."]
+            else:
+                lines += ["", f"A resit is required ({', '.join(st['resits_required'])}); "
+                              "it will be started at the next `/lesson`."]
+        elif st["exam_to_take"]:
             command = "/oral" if step["type"] == "oral-exam" else "/lesson"
             graded_note = " — paper being graded" if st["exam_to_take"] in st["being_graded"] else ""
             lines += ["", f"**Exam to take**: run `{command}` when you are ready{graded_note}."]
-        if not st["can_advance"]:
-            lines += ["", "`/lesson` is blocked until the blocking items above are submitted."]
 
     lines += ["", "## Resits", ""]
     resits = [i for i in state["work"].values() if i["type"] == "resit"]
@@ -76,7 +84,7 @@ def _work_table(items: list[dict]) -> list[str]:
         grades = " / ".join(_fmt(a["grade"]) for a in i["attempts"]) or "—"
         last = next((a["feedback"] for a in reversed(i["attempts"]) if a["feedback"]), None)
         link = f"[{last}]({last})" if last else "—"
-        lines.append(f"| {i['id']} | {i['title']} | {_fmt(best_grade(i))} | {i['coef']:g} | {grades} | {link} |")
+        lines.append(f"| {i['id']} | {_cell(i['title'])} | {_fmt(best_grade(i))} | {i['coef']:g} | {grades} | {link} |")
     return lines
 
 
