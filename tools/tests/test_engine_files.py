@@ -29,8 +29,12 @@ class TestEngineFiles(unittest.TestCase):
         self.assertEqual(lines[:2], ["@course.md", "@profile.md"])
 
     def test_agents_run_on_sonnet(self):
-        for agent in (ROOT / ".claude" / "agents").glob("*.md"):
-            front = agent.read_text(encoding="utf-8").split("---")[1]
+        agents = sorted((ROOT / ".claude" / "agents").glob("*.md"))
+        self.assertEqual({a.name for a in agents}, {"professor.md", "designer.md", "grader.md"})
+        for agent in agents:
+            text = agent.read_text(encoding="utf-8")
+            self.assertTrue(text.startswith("---"), f"{agent.name} must start with '---' (frontmatter)")
+            front = text.split("---")[1]
             self.assertRegex(front, r"(?m)^model:\s*sonnet\s*$", agent.name)
 
     def test_skills_have_frontmatter(self):
