@@ -23,9 +23,10 @@ def _paths(root: Path) -> tuple[Path, Path, Path]:
 
 
 def _write_documents(root: Path, state: dict, sequence: list[dict], rules: dict, today: date) -> None:
-    (root / "AGENDA.md").write_text(agenda(state, sequence, today), encoding="utf-8")
+    agenda_text, transcript_text = agenda(state, sequence, today), transcript(state, sequence, rules)
+    (root / "AGENDA.md").write_text(agenda_text, encoding="utf-8")
     (root / "student").mkdir(exist_ok=True)
-    (root / "student" / "transcript.md").write_text(transcript(state, sequence, rules), encoding="utf-8")
+    (root / "student" / "transcript.md").write_text(transcript_text, encoding="utf-8")
 
 
 def _parser() -> argparse.ArgumentParser:
@@ -77,12 +78,14 @@ def _print_status(st: dict) -> None:
 
 def execute(args, root: Path, today: date) -> None:
     state_path, sequence_path, rules_path = _paths(root)
+    # Validate the program once, before any mutation: a broken file must never leave a half-done command.
+    rules, sequence = load_rules(rules_path), load_sequence(sequence_path)
     if args.command == "init":
         state = init(state_path, today)
-        _write_documents(root, state, load_sequence(sequence_path), load_rules(rules_path), today)
+        _write_documents(root, state, sequence, rules, today)
         print(f"State ready: {state_path}")
         return
-    state, sequence = load(state_path), load_sequence(sequence_path)
+    state = load(state_path)
     changed = True
     if args.command == "status":
         changed = False
@@ -95,7 +98,7 @@ def execute(args, root: Path, today: date) -> None:
         print(f"{args.id} already exists, skipped.")
     elif args.command == "add-work":
         item = w.add_work(state, args.id, args.type, args.module, args.title, args.assignment, today,
-                          load_rules(rules_path), hours=args.hours, blocking=args.blocking, coef=args.coef,
+                          rules, hours=args.hours, blocking=args.blocking, coef=args.coef,
                           validated_by=args.validated_by)
         print(f"{item['id']} recorded ({item['hours']:g} h).")
     elif args.command == "finish":
@@ -103,7 +106,7 @@ def execute(args, root: Path, today: date) -> None:
     elif args.command == "link":
         w.link(state, args.reading, args.work)
     elif args.command == "submit":
-        print(f"{args.id}: attempt {w.submit(state, args.id, args.path, today, load_rules(rules_path))} recorded.")
+        print(f"{args.id}: attempt {w.submit(state, args.id, args.path, today, rules)} recorded.")
     elif args.command == "grade":
         try:
             criteria = json.loads(args.criteria)
@@ -114,7 +117,6 @@ def execute(args, root: Path, today: date) -> None:
         print(f"{args.id}: {w.grade(state, args.id, criteria, args.feedback):g}/20")
     elif args.command == "averages":
         changed = False
-        rules = load_rules(rules_path)
         modules = list(dict.fromkeys([s["module"] for s in sequence if s["type"] == "lesson"] +
                                      [i["module"] for i in state["work"].values() if i["module"].startswith("M")]))
         semesters = list(dict.fromkeys(s["semester"] for s in sequence))
@@ -127,7 +129,7 @@ def execute(args, root: Path, today: date) -> None:
             print(transcript(state, sequence, rules))
     if changed:
         save(state, state_path)
-        _write_documents(root, state, sequence, load_rules(rules_path), today)
+        _write_documents(root, state, sequence, rules, today)
 
 
 def main(argv=None) -> int:

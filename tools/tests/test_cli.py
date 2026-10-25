@@ -42,7 +42,7 @@ class TestCli(unittest.TestCase):
         r = self.add_lab()
         self.assertEqual(r.returncode, 0, r.stderr)
         self.assertFalse(json.loads(self.college("status", "--json").stdout)["can_advance"])
-        self.assertIn("1", self.college("submit", "LAB1.1", "--path", "work/LAB1.1").stdout)
+        self.assertIn("attempt 1", self.college("submit", "LAB1.1", "--path", "work/LAB1.1").stdout)
         (self.dir / "feedback").mkdir()
         (self.dir / "feedback" / "LAB1.1-v1.md").write_text("# Feedback")
         r = self.college("grade", "LAB1.1", "--criteria", '{"A": [12, 15], "B": [3, 5]}',
@@ -114,6 +114,27 @@ class TestCli(unittest.TestCase):
         data = json.loads(r.stdout)
         self.assertIn("M1", data["modules"])
         self.assertIn("S1", data["semesters"])
+
+    def test_cli_broken_rules_never_mutate_state(self):
+        self.college("init")
+        self.add_lab()
+        self.college("submit", "LAB1.1", "--path", "work/LAB1.1")
+        (self.dir / "feedback").mkdir()
+        (self.dir / "feedback" / "LAB1.1-v1.md").write_text("# Feedback")
+        state_file = self.dir / "state" / "state.json"
+        before = state_file.read_text()
+        self.write_program("rules.json", json.dumps({"weights": {"modules": 0.6, "exams": 0.5}}))
+        r = self.college("grade", "LAB1.1", "--criteria", '{"A": [12, 20]}', "--feedback", "feedback/LAB1.1-v1.md")
+        self.assertEqual(r.returncode, 2)
+        self.assertNotIn("/20", r.stdout)
+        self.assertEqual(state_file.read_text(), before)
+        self.assertEqual(json.loads(before)["work"]["LAB1.1"]["status"], "submitted")
+
+    def test_cli_init_with_broken_rules_writes_nothing(self):
+        self.write_program("rules.json", "{")
+        r = self.college("init")
+        self.assertEqual(r.returncode, 2)
+        self.assertFalse((self.dir / "state").exists())
 
     def test_cli_rules_file_applied(self):
         self.college("init")
