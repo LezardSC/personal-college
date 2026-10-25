@@ -84,3 +84,13 @@ class TestStatusExams(WithState):
 
     def test_no_exam_during_lessons(self):
         self.assertIsNone(s.status(self.state, SEQUENCE, self.rules)["exam_to_take"])
+
+
+class TestResitAfterLeavingModule(WithState):
+    def test_resit_required_when_student_never_resubmits(self):
+        w.step_done(self.state, "L1.01")
+        w.step_done(self.state, "L1.02")
+        graded(self.state, self.rules, "LAB1.1", "lab", "M1", 4)
+        self.assertEqual(s.status(self.state, SEQUENCE, self.rules)["resits_required"], [])
+        w.step_done(self.state, "L2.01")
+        self.assertEqual(s.status(self.state, SEQUENCE, self.rules)["resits_required"], ["M1"])

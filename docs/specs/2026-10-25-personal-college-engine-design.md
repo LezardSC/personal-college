@@ -122,7 +122,7 @@ Start from the prototype's `outils/scolarite/` (~580 lines, `unittest` suite), t
 - Replaces hard-coded constants: blocking types, coefficients, max attempts, module/exam weights (prototype: `travaux.py` `BLOQUANTS COEFS TENTATIVES_MAX`, `calculs.py` `POIDS_UE POIDS_PARTIELS`).
 - `templates/rules.json` holds **exactly** the prototype values (labs coef 2 and 2 attempts, homework 2 attempts, semester = 0.6 × module average + 0.4 × exam average…).
 - Validated on load (required keys, weights summing to 1, coefficients ≥ 0…); defaults apply when absent.
-- Exam and mock-oral coefficients are applied (weighted exam mean; a mock oral counts only if its coefficient is > 0). The `resit` coefficient is unused (the resit replaces the module average when higher). A module is complete only once no work in it can still be resubmitted (remaining attempts), so a resit is not triggered early.
+- Exam and mock-oral coefficients are applied (weighted exam mean; a mock oral counts only if its coefficient is > 0). The `resit` coefficient is unused (the resit replaces the module average when higher). A module is complete only once no work in it can still be resubmitted (remaining attempts), so a resit is not triggered early. That retry window is bounded: a failed item with attempts left stops holding its module open once any sequence step after the module's last lesson is done (or the whole sequence is), so a student who never resubmits still gets the resit.
 - Fixed in the engine, not configurable: the 20-point scale, the 10/20 threshold for resits and for auto-validating a linked reading (`--validated-by`), and "module average = max(average, resit)".
 
 ### 6.3 State versioning

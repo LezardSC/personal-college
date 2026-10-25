@@ -164,3 +164,32 @@ class TestExamCoefficients(WithState):
         graded(self.state, rules, "LAB1.1", "lab", "M1", 15)
         graded(self.state, rules, "EXAM-WRITTEN-S1", "written-exam", "S1", 2)
         self.assertEqual(a.semester_average(self.state, SEQUENCE, "S1", rules), (15.0, True))
+
+
+class TestRetryWindowBounded(WithState):
+    """A failed item with attempts left keeps its module open only while the student is inside it."""
+
+    def setUp(self):
+        super().setUp()
+        w.step_done(self.state, "L1.01")
+        w.step_done(self.state, "L1.02")
+        graded(self.state, self.rules, "LAB1.1", "lab", "M1", 4)  # never resubmitted
+
+    def test_still_inside_module_stays_open(self):
+        self.assertFalse(a.module_complete(self.state, SEQUENCE, "M1", self.rules))
+
+    def test_next_step_done_closes_module(self):
+        w.step_done(self.state, "L2.01")
+        self.assertTrue(a.module_complete(self.state, SEQUENCE, "M1", self.rules))
+
+    def test_exam_step_after_module_closes_it(self):
+        w.step_done(self.state, "EXAM-WRITTEN-S1")
+        self.assertTrue(a.module_complete(self.state, SEQUENCE, "M1", self.rules))
+
+    def test_last_module_closes_once_whole_sequence_done(self):
+        seq = SEQUENCE[:2]  # M1 is the whole sequence; all its steps are done
+        self.assertTrue(a.module_complete(self.state, seq, "M1", self.rules))
+
+    def test_item_of_module_absent_from_sequence_unchanged(self):
+        graded(self.state, self.rules, "LAB9.1", "lab", "M9", 4)
+        self.assertFalse(a.module_complete(self.state, SEQUENCE, "M9", self.rules))

@@ -37,15 +37,21 @@ def module_complete(state: dict, sequence: list[dict], module: str, rules: dict)
         return False
     # A non-blocking homework never submitted must not keep the module open (the resit
     # would never trigger); it simply stays ungraded.
-    # A graded item below the pass mark with attempts left keeps the module open: the student
-    # may still resubmit and raise the average, so no resit yet.
+    # A graded item below the pass mark with attempts left keeps the module open only while the
+    # student is still inside it (the retry window): once a step after the module's last lesson
+    # is done, or the whole sequence is, it counts as settled so the resit can trigger.
+    ids = [s["id"] for s in sequence]
+    last = max(ids.index(l) for l in lessons)
+    left_module = all(i in state["steps_done"] for i in ids) or \
+        any(i in state["steps_done"] for i in ids[last + 1:])
+
     def settled(item: dict) -> bool:
         if item["status"] == "todo":
             return not item["blocking"]
         if item["status"] != "graded":
             return False
         retry_left = len(item["attempts"]) < rules["max_attempts"].get(item["type"], 1)
-        return not (best_grade(item) < PASS_MARK and retry_left)
+        return left_module or not (best_grade(item) < PASS_MARK and retry_left)
 
     return all(settled(item) for item in state["work"].values()
                if item["module"] == module and item["coef"] > 0 and item["type"] != "resit")
