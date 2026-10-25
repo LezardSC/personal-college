@@ -7,9 +7,10 @@ It started as a single-subject prototype built for a self-taught developer with 
 ## Requirements
 
 - [Claude Code](https://claude.com/claude-code)
-- Python 3.14 or later
+- Python 3.10 or later (developed and tested on 3.14)
 - git
 - Docker (optional, only if your labs need services)
+- `gh` (GitHub CLI), only if your course reuses former projects from GitHub
 
 ## Create a course
 
@@ -42,7 +43,13 @@ This only works if the course was created by cloning the engine (shared history,
 - `templates/`
 - `docs/` and `LICENSE` (if present)
 
-A course-specific need goes through `course.md` (the subject) or `program/rules.json` (the scholarship rules). If neither can express it, the engine itself should evolve.
+A course-specific need goes through `course.md` (the subject, § Special rules) or `program/rules.json` (the scholarship rules); personal notes go in `CLAUDE.local.md` (git-ignored). If none can express it, the engine itself should evolve.
+
+Course-specific ignore rules (large datasets, local files) go in a course-owned `work/.gitignore` or in `.git/info/exclude`, never in the engine `.gitignore`. The engine `.gitignore` already covers secrets (`.env`) and model weights (`*.gguf`, `*.safetensors`, `*.pt`, …) so that the automatic commits never record them.
+
+## Subagent model
+
+The professor, designer and grader subagents run on **Sonnet** by default. If your subscription allows it you can switch to Opus (stronger, noticeably more expensive in usage) or Haiku: edit the `## Subagent model` section of `profile.md` (`sonnet`, `opus` or `haiku`). The skills read it each time they launch an agent.
 
 ## Commands
 
@@ -80,14 +87,14 @@ IDs: modules `M<n>`, lessons `L<m>.<nn>`, labs `LAB<m>.<n>`, homework `HW<m>.<n>
 
 Defaults are in `templates/rules.json`; a course can override them in `program/rules.json`.
 
-- Labs and homework: **2 attempts** at most, the best grade counts. Every other kind of work: 1 attempt.
+- Labs and homework: **2 attempts** at most, the best grade counts. Each top-level block you override in `program/rules.json` replaces the default block wholesale: copy it from `templates/rules.json` and edit it. Every other kind of work: 1 attempt.
 - **No due dates, no lateness, no penalties.** You progress at your own pace, and may alternate between several courses.
 - A lab, a written exam, an oral exam or a resit that is not submitted **blocks** `/lesson`. Readings and homework don't block.
 - A reading linked to a lab or homework is validated automatically when that work is graded 10/20 or more. Saying you finished it also works.
 - A module completed below 10/20 gives a **resit**; the module average is the better of the average and the resit.
 - Semester = 0.6 × module average + 0.4 × exam average (written and oral).
 - The scale is 20 points and the pass mark is 10, fixed in the engine.
-- **Do not open `.faculty/`**: it holds the grading rubrics and the oral guides. It is git-ignored.
+- **Do not open `.faculty/`**: it holds the grading rubrics and the oral guides. It is git-ignored by design (so you cannot read them in the git history), and therefore **not backed up**: losing the folder loses them.
 - Every command ends with a local git commit, which is your progress backup. Never edit `state/state.json` by hand.
 
 ## A typical day

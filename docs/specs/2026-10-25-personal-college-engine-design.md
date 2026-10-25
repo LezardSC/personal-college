@@ -56,7 +56,7 @@ Rule: **every file belongs either to the engine or to the course, never both.** 
 | `README.md` (install, course creation, update, cheat sheet of commands and files) | `profile.md` — the student |
 | `.claude/agents/`, `.claude/skills/` | `program/` — `syllabus.md`, `sequence.json`, `sources.md`, `rules.json` |
 | `tools/` (scholarship tool, PDF extraction, web snapshots, tests) | `resources/` — `books/`, `text/`, `web/`, `repos/`, `links.md` |
-| `.gitignore`, `requirements.txt` | `lessons/`, `assignments/`, `work/`, `feedback/`, `student/`, `state/`, `AGENDA.md`, `.faculty/` (git-ignored) |
+| `.gitignore` (also covers secrets `.env*` and model weights; course-specific ignores go in a course-owned `work/.gitignore` or `.git/info/exclude`), `requirements.txt` | `lessons/`, `assignments/`, `work/`, `feedback/`, `student/`, `state/`, `AGENDA.md`, `.faculty/` (git-ignored) |
 | `templates/` — what `/enroll` copies and fills (`course.md`, `profile.md`, `rules.json`, empty `student/` files, a decision-record template…) | course-level docs, if any |
 | `docs/` (engine design and plans), `LICENSE` | |
 
@@ -122,6 +122,7 @@ Start from the prototype's `outils/scolarite/` (~580 lines, `unittest` suite), t
 - Replaces hard-coded constants: blocking types, coefficients, max attempts, module/exam weights (prototype: `travaux.py` `BLOQUANTS COEFS TENTATIVES_MAX`, `calculs.py` `POIDS_UE POIDS_PARTIELS`).
 - `templates/rules.json` holds **exactly** the prototype values (labs coef 2 and 2 attempts, homework 2 attempts, semester = 0.6 × module average + 0.4 × exam average…).
 - Validated on load (required keys, weights summing to 1, coefficients ≥ 0…); defaults apply when absent.
+- Exam and mock-oral coefficients are applied (weighted exam mean; a mock oral counts only if its coefficient is > 0). The `resit` coefficient is unused (the resit replaces the module average when higher). A module is complete only once no work in it can still be resubmitted (remaining attempts), so a resit is not triggered early.
 - Fixed in the engine, not configurable: the 20-point scale, the 10/20 threshold for resits and for auto-validating a linked reading (`--validated-by`), and "module average = max(average, resit)".
 
 ### 6.3 State versioning
@@ -130,7 +131,7 @@ Start from the prototype's `outils/scolarite/` (~580 lines, `unittest` suite), t
 
 ### 6.4 Tests
 
-Port the existing suite; add tests for rules (defaults, custom, invalid) and migration; drop due-date tests. Run: `python3 -m unittest discover -s tools/tests -t .`
+Port the existing suite; add tests for rules (defaults, custom, invalid) and migration; drop due-date tests. Run: `.venv/bin/python -m unittest discover -s tools/tests -t .`
 
 ## 7. Agents and skills
 
@@ -143,7 +144,7 @@ Start from the prototype's `professeur`, `concepteur`, `correcteur` agents and `
 | `grader.md` | "run the code" → the execution policy of `course.md`. A missing execution prerequisite (unreachable service) is reported as `CANNOT GRADE:` like a missing rubric — better no grade than a wrong one. |
 | `/lesson`, `/submit`, `/ask`, `/oral` | generic descriptions; no due dates; oral format from `course.md` (recruiter-style as default). |
 
-Unchanged: who reads `.faculty/` (only designer and grader read rubrics; the examiner reads only the oral guide; professor and TA never), subagents run on `model: sonnet`, rubrics total exactly 20, grader runs in an isolated context with only the ID, path and attempt, the TA's three-level hint ladder and never giving solutions, oral transcribed after every exchange, local commit at the end of each command, student record updates, "In an interview" boxes, Mermaid diagrams, book citations (full title, chapter, pages — never an internal slug).
+Unchanged: who reads `.faculty/` (only designer and grader read rubrics; the examiner reads only the oral guide; professor and TA never), subagents run on `sonnet` by default, configurable in `profile.md` § Subagent model (`sonnet`, `opus`, `haiku`; skills pass it when launching an agent), rubrics total exactly 20, grader runs in an isolated context with only the ID, path and attempt, the TA's three-level hint ladder and never giving solutions, oral transcribed after every exchange, local commit at the end of each command, student record updates, "In an interview" boxes, Mermaid diagrams, book citations (full title, chapter, pages — never an internal slug).
 
 **Prompt examples**: prompts are neutral. A concrete example is allowed if presented as an example ("e.g. an ADR in a software course"), never as a rule. Filled-in examples live in `templates/`.
 
@@ -171,8 +172,8 @@ A skill, run in a freshly cloned course (§4.2), in the main session (interactiv
 1. **Resources.** The student gives a folder of PDFs (possibly a Windows path, read via `/mnt/c/...`) and a links file, plus optionally an intake notes file. PDFs are **copied** (originals untouched), links copied to `resources/links.md`, text and TOCs extracted (§8.1).
 2. **Sources.** Write `program/sources.md`: slug → full title, authors, TOC; the reading and citation method; the web catalogue (§8.2).
 3. **Enrollment interview**, one question at a time, seeded by the intake notes if given: goal and target job, teaching language, starting point, early pacing, lab formats and tools, decision record, oral format, former projects, special rules, desired length and semesters. Then write `course.md` and `profile.md`; adjust `rules.json` if asked.
-4. **Program structure — validated by the student before going further.** The professor proposes modules (content, sources, lab tools), semesters and exams; the student amends and approves.
-5. **Syllabus.** `professor` in `syllabus` mode → `program/syllabus.md` and `program/sequence.json`.
+4. **Program structure — validated by the student before going further.** The registrar (the `/enroll` skill) drafts the structure; it proposes modules (content, sources, lab tools), semesters and exams; the student amends and approves.
+5. **Syllabus.** `professor` in `syllabus` mode → `program/syllabus.md` and `program/sequence.json`. The sequence must satisfy the tool's validation: types `lesson`/`written-exam`/`oral-exam`, unique ids, `S<n>` semesters, `M<n>` modules for lessons, exam module = semester, ids `L<m>.<nn>` / `EXAM-WRITTEN-S<n>` / `EXAM-ORAL-S<n>`.
 6. **Start.** `college.py init`, agenda generation, `student/` files from `templates/`, local commit `enroll: <course>`. Announce that `/lesson` is ready.
 
 ## 10. Done criteria
