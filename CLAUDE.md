@@ -44,7 +44,7 @@ Engine names (commands, IDs, types, statuses, folders, tool output) are English.
 | Exams | `EXAM-WRITTEN-S<n>`, `EXAM-ORAL-S<n>` |
 | Resit / mock oral | `RESIT-M<n>` / `MOCK-ORAL-<YYYYMMDD>` |
 | Types | `lab homework reading written-exam oral-exam mock-oral resit` |
-| Statuses | `todo submitted graded` |
+| Statuses | `todo submitted graded`, plus `done` (readings only) |
 | Tool | `tools/college.py` |
 
 Paths:
@@ -61,4 +61,4 @@ Paths:
 
 ## Tests
 
-`python3 -m unittest discover -s tools/tests -t .`
+`.venv/bin/python -m unittest discover -s tools/tests -t .` (create the venv first: `python3 -m venv .venv && .venv/bin/pip install -r requirements.txt`)

@@ -69,7 +69,7 @@ The names of the criteria and the maxima are exactly those of the scale (total 2
   - `## Strengths`: add what is solidly acquired;
   - `## Recurring weaknesses`: add or reinforce, flagging when a weakness repeats from one work to the next;
   - `## To review`: set "Missed?" to `yes` for the missed concepts (add the row if the concept is not there), to `no` for a succeeded concept that was missed before.
-- `student/decision-log.md`: one line per decision record submitted (work, file, decision in one sentence, grade obtained on the decision-record criterion).
+- the decision log named in `course.md` § Decision record (default `student/decision-log.md`): one line per decision record submitted (work, file, decision in one sentence, grade obtained on the decision-record criterion).
 
 ## Final report
 

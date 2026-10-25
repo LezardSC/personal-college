@@ -279,7 +279,7 @@ Implements spec §9 in the main session (interactive). Required content:
 - Slugs: short, lowercase, hyphenated, unique; never shown to the student (citation rules as in the prototype `programme/sources.md`, translated — copy that method section into the generated `program/sources.md`).
 - TOC rebuild for outline-less PDFs: grep heading candidates (`^(Chapter|CHAPTER|Part|PART)\b`, numbered `^\d+(\.\d+)*\s+[A-Z]`, all-caps short lines) in `resources/text/<slug>.txt`, confirm by reading around each hit, write `<slug>.toc.md` in the extractor's format, and flag "TOC rebuilt from text" in `sources.md`.
 - Web catalogue: each link → topic + kind (`official docs`, `tutorial`, `code repository`, `student-only course`); no snapshots at enrollment (professor snapshots on demand).
-- Optional intake notes file: read it first and only ask what it leaves open; it is copied to `docs/enrollment-notes.md` in the course.
+- Optional intake notes file: read it first and only ask what it leaves open; it is copied to `program/enrollment-notes.md` in the course.
 - Interview: one question at a time, in the student's language; produces `course.md` from `templates/course.md`, `profile.md` from `templates/profile.md` (or copied from a path the student gives), `program/rules.json` only if the student changes a default.
 - Structure validation (step 4) is mandatory before launching `professor` in `syllabus` mode (pass it the approved structure, `course.md` and the sources).
 - Step 6: `python3 tools/college.py init`, copy `templates/student/*` into `student/` if absent, `python3 tools/college.py agenda`, `git add -A && git commit -m "enroll: <course>"`, announce `/lesson`.

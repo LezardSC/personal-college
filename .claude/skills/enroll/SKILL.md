@@ -29,7 +29,7 @@ If not: `python3 -m venv .venv && .venv/bin/pip install -r requirements.txt`, th
 
 *Check:* `resources/links.md` exists, and every PDF of the folder has its copy in `resources/books/` and its text in `resources/text/`. Redo only what is missing.
 
-1. **Inputs.** Take them from the arguments; ask for what is missing: the folder of PDFs (a Windows path is read through `/mnt/c/...`), the links file, and an optional **intake notes** file. If the student has no links, `resources/links.md` is created with a single line saying so. If an intake notes file is given, read it **now** and, in step 3, ask only what it leaves open. Copy it to `docs/enrollment-notes.md` if that file is absent.
+1. **Inputs.** Take them from the arguments; ask for what is missing: the folder of PDFs (a Windows path is read through `/mnt/c/...`), the links file, and an optional **intake notes** file. If the student has no links, `resources/links.md` is created with a single line saying so. If an intake notes file is given, read it **now** and, in step 3, ask only what it leaves open. Copy it to `program/enrollment-notes.md` if that file is absent.
 2. **Copy the PDFs** to `resources/books/` under their original names, **only if `resources/books/<name>` is absent**. Never move or modify the originals. Copy the links file to `resources/links.md` if absent.
 3. **Slugs.** For each book choose a short, lowercase, hyphenated, unique slug (`resources/text/<slug>.txt` is the existing-slug check). Slugs are internal: they appear in file paths and in `sources.md`, **never** in anything the student reads.
 4. **Extract**, only if `resources/text/<slug>.txt` is absent:
