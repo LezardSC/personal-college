@@ -78,8 +78,8 @@ Rule: **every file belongs either to the engine or to the course, never both.** 
 | UE (teaching unit) | module `M<n>` |
 | Lesson `L<ue>.<nn>` | `L<m>.<nn>` |
 | TP / DV / LE (lab / homework / reading) | `LAB<m>.<n>` / `HW<m>.<n>` / `RD<m>.<n>` |
-| Written / oral exam `PE-S<n>` / `PO-S<n>` | `EW-S<n>` / `EO-S<n>` |
-| Resit `RA-UE<n>` / mock oral `OB-<date>` | `RS-M<n>` / `MO-<YYYYMMDD>` |
+| Written / oral exam `PE-S<n>` / `PO-S<n>` | `EXAM-WRITTEN-S<n>` / `EXAM-ORAL-S<n>` |
+| Resit `RA-UE<n>` / mock oral `OB-<date>` | `RESIT-M<n>` / `MOCK-ORAL-<YYYYMMDD>` |
 | Types `tp devoir lecture partiel-ecrit partiel-oral oral-blanc rattrapage` | `lab homework reading written-exam oral-exam mock-oral resit` |
 | Statuses `a_faire rendu corrige` | `todo submitted graded` |
 | `cours/ devoirs/ travail/ corrections/` | `lessons/ assignments/ work/ feedback/` |
