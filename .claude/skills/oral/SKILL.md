@@ -16,7 +16,7 @@ You may read **only** `.faculty/oral-guides/<id>-guide.md`. Never a rubric (`.fa
 - Otherwise, if there is an `oral-exam` or a `mock-oral` in status `todo` (`python3 tools/college.py status --json` and `state/state.json`), take it.
 - Otherwise, if `next_step` is an `oral-exam` that has not been created yet: launch the `designer` agent with `oral-exam <id>`.
 - Otherwise, it is a **mock oral**: ask for the topic among the modules already covered (`program/sequence.json` and `steps_done` in `state/state.json`), then launch the `designer` agent with `mock-oral MOCK-ORAL-<YYYYMMDD> <topic>`. Mock orals are graded but, with the default rules, do not count in the averages (coefficient in `program/rules.json`).
-- If the chosen exam is already `graded` but not in `steps_done`, run `python3 tools/college.py step-done <id>`, say so, and skip to the archive (step 4.6): nothing is left to examine.
+- If the chosen exam is an `oral-exam` (never a mock oral) already `graded` but not in `steps_done`, run `python3 tools/college.py step-done <id>`, say so, and skip to the archive (step 4.6): nothing is left to examine.
 - Read the guide. If it does not exist, or if `test -f .faculty/rubrics/<id>.md` fails (a plain existence test, do not open the rubric), say that the exam is not ready, offer to relaunch the `designer` agent, and stop **before** starting.
 
 ## 2. Conduct the interview

@@ -92,16 +92,16 @@ Otherwise propose the structure yourself (you are the registrar: you draft, the 
 
 Launch the **`professor`** agent (with that model) with the prompt `syllabus`, followed by: the **approved structure** (modules, semesters, exams, indicative lesson counts), the paths of `course.md`, `profile.md`, `program/sources.md` and `resources/text/*.toc.md`, and today's date. Check afterwards that:
 
-- both files exist and `program/sequence.json` is valid JSON where every step carries the five string keys `id`, `type`, `module`, `semester`, `title`, with ids unique, `type` one of `lesson`, `written-exam`, `oral-exam`, `semester` of the form `S<n>`, lessons with module `M<n>` and id `L<m>.<nn>`, exams with module equal to their semester and id `EXAM-WRITTEN-S<n>` / `EXAM-ORAL-S<n>` matching the type and semester (`python3 tools/college.py init` in step 6 validates it and names any defect);
+- both files exist and `program/sequence.json` is valid JSON where every step carries the five string keys `id`, `type`, `module`, `semester`, `title`, with ids unique, `type` one of `lesson`, `written-exam`, `oral-exam`, `semester` of the form `S<n>`, lessons with module `M<n>` and id `L<m>.<nn>`, exams with module equal to their semester and id `EXAM-WRITTEN-S<n>` / `EXAM-ORAL-S<n>` matching the type and semester (the `init` run just below validates it and names any defect);
 - the modules and exams match the approved structure.
 
-If not, send the professor back with the precise defect. Do not repair them silently. Give the student the path of `program/syllabus.md` and a one-paragraph summary; invite changes (small edits you can do; structural ones restart from step 4).
+Then run `python3 tools/college.py init` (idempotent; it validates the sequence before creating any state). If it errors, send the professor back with the exact error. If the other checks fail, send the professor back with the precise defect. Do not repair them silently. Give the student the path of `program/syllabus.md` and a one-paragraph summary; invite changes (small edits you can do; structural ones restart from step 4).
 
 ## 6. Start
 
 *Check:* `state/state.json` exists → state already initialised; still do whatever below is missing.
 
-1. `python3 tools/college.py init` (creates an empty state; the sequence from `program/sequence.json` is read by `status`), unless the state exists.
+1. The state was created by the `init` of step 5; reuse it (run `python3 tools/college.py init` again only if `state/state.json` is absent, it is idempotent).
 2. Copy `templates/student/*` into `student/` **only the files that are absent** (`record.md`, `office-hours.md`, `decision-log.md`).
 3. `python3 tools/college.py agenda`; then `python3 tools/college.py status --json` to confirm that the next step is the first lesson.
 4. If `program/rules.json` is somehow absent, copy `templates/rules.json` to it.
