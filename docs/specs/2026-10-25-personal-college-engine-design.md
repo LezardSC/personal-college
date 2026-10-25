@@ -28,7 +28,7 @@ Two projects follow, in order:
 - A subject is described by **a few course-owned files**. Agents, skills and tools contain nothing subject-specific.
 - Updating the engine inside an existing course is a plain `git pull`, **with no conflicts**.
 - **No due dates, no lateness**: the student progresses at their own pace and may alternate between several courses.
-- **English-first and open-source ready**: all engine files, names and messages are in English. The **teaching language** is a per-course setting (lessons, assignments, feedback, orals and the agenda are produced in it).
+- **English-first and open-source ready**: all engine files, names and messages are in English. The **teaching language** is a per-course setting (lessons, assignments, feedback and orals are written in it; the tool-generated `AGENDA.md` and transcript stay in English, like every other engine name).
 
 **Non-goals**
 - Arbitrary subjects. The target is **technical courses** (software, AI and neighbours) whose labs are code or written documents. Other subjects aren't blocked on purpose, but aren't tested.
