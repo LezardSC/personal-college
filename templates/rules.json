@@ -1,0 +1,25 @@
+{
+  "blocking": [
+    "lab",
+    "written-exam",
+    "oral-exam",
+    "resit"
+  ],
+  "coefficients": {
+    "lab": 2,
+    "homework": 1,
+    "written-exam": 1,
+    "oral-exam": 1,
+    "resit": 1,
+    "reading": 0,
+    "mock-oral": 0
+  },
+  "max_attempts": {
+    "lab": 2,
+    "homework": 2
+  },
+  "weights": {
+    "modules": 0.6,
+    "exams": 0.4
+  }
+}
