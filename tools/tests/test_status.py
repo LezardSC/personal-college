@@ -1,5 +1,3 @@
-import unittest
-
 from tools.scholarship import status as s
 from tools.scholarship import work as w
 from tools.tests.helpers import D0, SEQUENCE, WithState, graded, regraded
@@ -56,8 +54,8 @@ class TestStatus(WithState):
         self.assertTrue(st["can_advance"])
 
     def test_next_exam(self):
-        for id in ("L1.01", "L1.02", "L2.01"):
-            w.step_done(self.state, id)
+        for step_id in ("L1.01", "L1.02", "L2.01"):
+            w.step_done(self.state, step_id)
         self.assertEqual(self.status()["next_step"]["type"], "written-exam")
 
     def test_course_complete(self):
@@ -80,8 +78,8 @@ class TestStatusExams(WithState):
         self.assertEqual(s.status(self.state, SEQUENCE, self.rules)["being_graded"], ["LAB1.1"])
 
     def test_exam_to_take(self):
-        for id in ("L1.01", "L1.02", "L2.01"):
-            w.step_done(self.state, id)
+        for step_id in ("L1.01", "L1.02", "L2.01"):
+            w.step_done(self.state, step_id)
         self.assertEqual(s.status(self.state, SEQUENCE, self.rules)["exam_to_take"], "EXAM-WRITTEN-S1")
 
     def test_no_exam_during_lessons(self):

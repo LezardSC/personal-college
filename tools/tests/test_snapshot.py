@@ -1,5 +1,6 @@
 import contextlib
 import io
+import os
 import tempfile
 import unittest
 from datetime import date
@@ -56,7 +57,6 @@ class TestMain(unittest.TestCase):
         self._tmp = tempfile.TemporaryDirectory()
         self.root = Path(self._tmp.name)
         self.addCleanup(self._tmp.cleanup)
-        import os
         old = os.environ.get("COLLEGE_ROOT")
         os.environ["COLLEGE_ROOT"] = str(self.root)
         self.addCleanup(lambda: os.environ.__setitem__("COLLEGE_ROOT", old)
@@ -95,8 +95,11 @@ class TestMain(unittest.TestCase):
     def test_existing_file_returns_2_and_refresh_works(self):
         args = ["https://x.org/a", "mcp", "intro"]
         self.run_main(args, lambda u: HTML)
+        target = next(iter(self.files()))
+        target.write_text("kept", encoding="utf-8")
         code, _ = self.run_main(args, lambda u: HTML)
         self.assertEqual(code, 2)
+        self.assertEqual(target.read_text(encoding="utf-8"), "kept")
         code, _ = self.run_main(args + ["--refresh"], lambda u: HTML)
         self.assertEqual(code, 0)
 
@@ -107,6 +110,19 @@ class TestMain(unittest.TestCase):
         self.assertEqual(self.files(), [])
         self.assertFalse((self.root / "x.md").exists())
         self.assertFalse((self.root / "resources" / "x.md").exists())
+
+    def test_rejects_urls_that_break_the_header(self):
+        for url in ("https://x.org/a b", "https://x.org/a-->b", "https://x.org/\na"):
+            code, _ = self.run_main([url, "mcp", "intro"], lambda u: HTML)
+            self.assertEqual(code, 2, url)
+        self.assertEqual(self.files(), [])
+
+    def test_fetch_error_is_one_line(self):
+        def boom(u):
+            raise OSError("down\nsecond line\n  third")
+        code, err = self.run_main(["https://x.org/a", "mcp", "intro"], boom)
+        self.assertEqual(code, 2)
+        self.assertEqual(len(err.strip().splitlines()), 1)
 
     def test_write_snapshot_rejects_path_like_names(self):
         with self.assertRaises(ValueError):

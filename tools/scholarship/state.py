@@ -32,6 +32,15 @@ def _corrupt(path: Path, reason: str) -> CollegeError:
     )
 
 
+def _check_keys(state, path: Path, when: str = "") -> None:
+    if not isinstance(state, dict):
+        raise _corrupt(path, f"a JSON object is expected {when}".strip())
+    for key, expected in KEYS.items():
+        value = state.get(key)
+        if not isinstance(value, expected) or isinstance(value, bool):
+            raise _corrupt(path, f"key \"{key}\" missing or invalid {when}".strip())
+
+
 def load(path: Path) -> dict:
     if not path.exists():
         raise CollegeError(f"State not found ({path}): run `college.py init`.")
@@ -41,10 +50,7 @@ def load(path: Path) -> dict:
         raise _corrupt(path, f"invalid JSON: {e}") from None
     if not isinstance(state, dict):
         raise _corrupt(path, "a JSON object is expected")
-    for key, expected in KEYS.items():
-        value = state.get(key)
-        if not isinstance(value, expected) or isinstance(value, bool):
-            raise _corrupt(path, f"key \"{key}\" missing or invalid")
+    _check_keys(state, path)
     if state["version"] > VERSION:
         raise CollegeError(
             f"State {path} is version {state['version']}, newer than this engine (version {VERSION}): "
@@ -59,6 +65,7 @@ def load(path: Path) -> dict:
         state["version"] += 1
         migrated = True
     if migrated:
+        _check_keys(state, path, "after migration")
         save(state, path)
     return state
 

@@ -21,7 +21,14 @@ def _check_slug(label: str, value: str) -> None:
         raise ValueError(f"invalid {label} {value!r}: use lowercase letters, digits and hyphens")
 
 
+def _check_url(url: str) -> None:
+    # The URL is written into an HTML comment: no whitespace, no comment terminator.
+    if re.search(r"\s", url) or "-->" in url:
+        raise ValueError(f"invalid url {url!r}: whitespace and '-->' are not allowed")
+
+
 def to_markdown(html: str, url: str, retrieved_on: date) -> str:
+    _check_url(url)
     body = trafilatura.extract(
         html,
         output_format="markdown",
@@ -38,10 +45,13 @@ def write_snapshot(root: Path, topic: str, name: str, content: str, refresh: boo
     _check_slug("topic", topic)
     _check_slug("name", name)
     path = Path(root) / "resources" / "web" / topic / f"{name}.md"
-    if path.exists() and not refresh:
-        raise FileExistsError(f"{path} already exists (use --refresh to overwrite)")
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(content, encoding="utf-8")
+    try:
+        # Mode "x" is an atomic no-overwrite: no race between the check and the write.
+        with open(path, "w" if refresh else "x", encoding="utf-8") as f:
+            f.write(content)
+    except FileExistsError:
+        raise FileExistsError(f"{path} already exists (use --refresh to overwrite)") from None
     return path
 
 
@@ -60,10 +70,11 @@ def main(argv=None, fetch=trafilatura.fetch_url) -> int:
     try:
         _check_slug("topic", args.topic)
         _check_slug("name", args.name)
+        _check_url(args.url)
         try:
             html = fetch(args.url)
         except Exception as e:
-            raise OSError(f"could not fetch {args.url}: {e}") from e
+            raise OSError(f"could not fetch {args.url}: {' '.join(str(e).split())}") from e
         if not html:
             raise OSError(f"could not fetch {args.url}")
         content = to_markdown(html, args.url, date.today())

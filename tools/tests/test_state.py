@@ -65,3 +65,19 @@ class TestMigrations(WithState):
         self.assertIs(loaded["extra"], True)
         self.assertEqual(loaded["version"], 2)
         self.assertEqual(json.loads(self.path.read_text())["version"], 2)
+
+    def test_missing_migration_refused(self):
+        self.path.write_text(json.dumps({**self.state, "version": 1}))
+        with mock.patch.object(m_state, "VERSION", 3), mock.patch.object(m_state, "MIGRATIONS", {2: lambda s: s}):
+            with self.assertRaises(CollegeError) as cm:
+                m_state.load(self.path)
+        self.assertIn("No migration from state version 1", str(cm.exception))
+
+    def test_broken_migration_result_is_not_saved(self):
+        before = self.path.read_text()
+        with mock.patch.object(m_state, "VERSION", 2), \
+                mock.patch.object(m_state, "MIGRATIONS", {1: lambda s: {k: v for k, v in s.items() if k != "work"}}):
+            with self.assertRaises(CollegeError) as cm:
+                m_state.load(self.path)
+        self.assertIn("corrupted", str(cm.exception))
+        self.assertEqual(self.path.read_text(), before)

@@ -68,5 +68,6 @@ class TestEngineFiles(unittest.TestCase):
         for bad in ("run /cours now", "UE1", "scol.py", "/rendu x"):
             self.assertNotEqual(forbidden_hits(bad), [], bad)
 
+
 if __name__ == "__main__":
     unittest.main()

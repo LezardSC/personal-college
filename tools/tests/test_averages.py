@@ -1,5 +1,4 @@
 import copy
-import unittest
 
 from tools.scholarship import averages as a
 from tools.scholarship import work as w

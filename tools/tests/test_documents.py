@@ -29,15 +29,15 @@ class TestAgenda(WithState):
         self.assertIn("Nothing to submit", self.agenda())
 
     def test_agenda_announces_exam(self):
-        for id in ("L1.01", "L1.02", "L2.01"):
-            w.step_done(self.state, id)
+        for step_id in ("L1.01", "L1.02", "L2.01"):
+            w.step_done(self.state, step_id)
         text = self.agenda()
         self.assertIn("Exam to take", text)
         self.assertIn("`/lesson`", text)
 
     def test_agenda_oral_exam_names_oral(self):
-        for id in ("L1.01", "L1.02", "L2.01", "EXAM-WRITTEN-S1"):
-            w.step_done(self.state, id)
+        for step_id in ("L1.01", "L1.02", "L2.01", "EXAM-WRITTEN-S1"):
+            w.step_done(self.state, step_id)
         self.assertIn("`/oral`", self.agenda())
 
     def test_agenda_blocked(self):
@@ -45,8 +45,8 @@ class TestAgenda(WithState):
         self.assertIn("`/lesson` is blocked", self.agenda())
 
     def test_blocked_exam_does_not_say_run_when_ready(self):
-        for id in ("L1.01", "L1.02", "L2.01"):
-            w.step_done(self.state, id)
+        for step_id in ("L1.01", "L1.02", "L2.01"):
+            w.step_done(self.state, step_id)
         w.add_work(self.state, "LAB1.1", "lab", "M1", "T", "a", D0, self.rules, hours=2)
         text = self.agenda()
         self.assertIn("`/lesson` is blocked", text)

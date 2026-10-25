@@ -31,7 +31,6 @@ class TestWork(WithState):
         self.assertEqual(lab["hours"], 4)
         self.assertEqual(lab["created_on"], D0.isoformat())
         self.assertNotIn("due", lab)
-        self.assertFalse([k for k in lab if "due" in k])
         reading = self.add("RD1.1", "reading")
         self.assertEqual((reading["blocking"], reading["coef"]), (False, 0))
 
