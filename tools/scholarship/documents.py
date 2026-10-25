@@ -18,8 +18,8 @@ def _verdict(average: float | None) -> str:
     return "" if average is None else (" — passed" if average >= PASS_MARK else " — not passed")
 
 
-def agenda(state: dict, sequence: list[dict], today: date) -> str:
-    st = status(state, sequence)
+def agenda(state: dict, sequence: list[dict], today: date, rules: dict) -> str:
+    st = status(state, sequence, rules)
     lines = [WARNING, "# Agenda", "", f"*Updated on {today.isoformat()}.*", "", "## To do", ""]
     todo = [i for i in state["work"].values() if i["status"] == "todo"]
     if todo:
@@ -91,7 +91,7 @@ def transcript(state: dict, sequence: list[dict], rules: dict) -> str:
         for module in semester_modules(sequence, sem):
             avg = module_average(state, module)
             verdict = _verdict(avg)
-            if avg is not None and not module_complete(state, sequence, module):
+            if avg is not None and not module_complete(state, sequence, module, rules):
                 verdict += " (in progress)"
             items = [i for i in state["work"].values() if i["module"] == module and i["type"] != "reading"]
             lines += [f"### {module}", "", f"Average: {_fmt(avg and round(avg, 2))}{verdict}", ""] \

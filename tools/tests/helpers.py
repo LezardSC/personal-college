@@ -39,3 +39,10 @@ def graded(state, rules, id, type, module, value, today=D0, **kw):
                   hours=2, **kw)
     work.submit(state, id, f"work/{id}", today, rules)
     work.grade(state, id, {"All": [value, 20]}, f"feedback/{id}-v1.md")
+
+
+def regraded(state, rules, id, value, today=D0):
+    """Submit another attempt of an already graded item and grade it `value`/20."""
+    from tools.scholarship import work
+    work.submit(state, id, f"work/{id}-2", today, rules)
+    work.grade(state, id, {"All": [value, 20]}, f"feedback/{id}-v2.md")

@@ -1,6 +1,6 @@
 """Module and semester averages, module completion."""
 from tools.scholarship.program import EXAMS
-from tools.scholarship.work import best_grade
+from tools.scholarship.work import PASS_MARK, best_grade
 
 
 def _mean(values: list[float]) -> float | None:
@@ -31,14 +31,23 @@ def semester_modules(sequence: list[dict], semester: str) -> list[str]:
     return modules
 
 
-def module_complete(state: dict, sequence: list[dict], module: str) -> bool:
+def module_complete(state: dict, sequence: list[dict], module: str, rules: dict) -> bool:
     lessons = [s["id"] for s in sequence if s["type"] == "lesson" and s["module"] == module]
     if not lessons or any(lesson not in state["steps_done"] for lesson in lessons):
         return False
     # A non-blocking homework never submitted must not keep the module open (the resit
     # would never trigger); it simply stays ungraded.
-    return all(item["status"] == "graded" or (item["status"] == "todo" and not item["blocking"])
-               for item in state["work"].values()
+    # A graded item below the pass mark with attempts left keeps the module open: the student
+    # may still resubmit and raise the average, so no resit yet.
+    def settled(item: dict) -> bool:
+        if item["status"] == "todo":
+            return not item["blocking"]
+        if item["status"] != "graded":
+            return False
+        retry_left = len(item["attempts"]) < rules["max_attempts"].get(item["type"], 1)
+        return not (best_grade(item) < PASS_MARK and retry_left)
+
+    return all(settled(item) for item in state["work"].values()
                if item["module"] == module and item["coef"] > 0 and item["type"] != "resit")
 
 

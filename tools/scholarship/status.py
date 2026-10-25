@@ -4,14 +4,14 @@ from tools.scholarship.program import EXAMS
 from tools.scholarship.work import PASS_MARK
 
 
-def status(state: dict, sequence: list[dict]) -> dict:
+def status(state: dict, sequence: list[dict], rules: dict) -> dict:
     """Computed view; never modifies the state."""
     remaining = [s for s in sequence if s["id"] not in state["steps_done"]]
     items = state["work"].values()
     blocking = [i["id"] for i in items if i["blocking"] and i["status"] == "todo"]
     modules = dict.fromkeys(s["module"] for s in sequence if s["type"] == "lesson")
     resits = [m for m in modules
-              if module_complete(state, sequence, m)
+              if module_complete(state, sequence, m, rules)
               and (avg := module_average(state, m)) is not None and avg < PASS_MARK
               and f"RESIT-{m}" not in state["work"]]
     next_step = remaining[0] if remaining else None

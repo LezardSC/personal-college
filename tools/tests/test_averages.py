@@ -3,7 +3,7 @@ import unittest
 
 from tools.scholarship import averages as a
 from tools.scholarship import work as w
-from tools.tests.helpers import D0, SEQUENCE, WithState, graded
+from tools.tests.helpers import D0, SEQUENCE, WithState, graded, regraded
 
 
 class TestAverages(WithState):
@@ -61,20 +61,20 @@ class TestAverages(WithState):
         self.assertEqual(a.semester_average(self.state, SEQUENCE, "S1", rules), (15.0, False))
 
     def test_module_complete(self):
-        self.assertFalse(a.module_complete(self.state, SEQUENCE, "M1"))
+        self.assertFalse(a.module_complete(self.state, SEQUENCE, "M1", self.rules))
         w.step_done(self.state, "L1.01")
         w.step_done(self.state, "L1.02")
         w.add_work(self.state, "LAB1.1", "lab", "M1", "T", "a", D0, self.rules, hours=1)
         w.submit(self.state, "LAB1.1", "work/LAB1.1", D0, self.rules)
-        self.assertFalse(a.module_complete(self.state, SEQUENCE, "M1"))
+        self.assertFalse(a.module_complete(self.state, SEQUENCE, "M1", self.rules))
         w.grade(self.state, "LAB1.1", {"A": [10, 20]}, "f.md")
-        self.assertTrue(a.module_complete(self.state, SEQUENCE, "M1"))
+        self.assertTrue(a.module_complete(self.state, SEQUENCE, "M1", self.rules))
 
     def test_module_complete_ignores_readings(self):
         w.step_done(self.state, "L1.01")
         w.step_done(self.state, "L1.02")
         w.add_work(self.state, "RD1.1", "reading", "M1", "R", "a", D0, self.rules, hours=1)
-        self.assertTrue(a.module_complete(self.state, SEQUENCE, "M1"))
+        self.assertTrue(a.module_complete(self.state, SEQUENCE, "M1", self.rules))
 
 
 class TestModuleCompleteUnsubmittedHomework(WithState):
@@ -82,14 +82,35 @@ class TestModuleCompleteUnsubmittedHomework(WithState):
         w.step_done(self.state, "L1.01")
         w.step_done(self.state, "L1.02")
         graded(self.state, self.rules, "LAB1.1", "lab", "M1", 8)
+        regraded(self.state, self.rules, "LAB1.1", 8)
         w.add_work(self.state, "HW1.1", "homework", "M1", "D", "a", D0, self.rules, hours=1)
-        self.assertTrue(a.module_complete(self.state, SEQUENCE, "M1"))
+        self.assertTrue(a.module_complete(self.state, SEQUENCE, "M1", self.rules))
 
     def test_unsubmitted_lab_blocks_completion(self):
         w.step_done(self.state, "L1.01")
         w.step_done(self.state, "L1.02")
         w.add_work(self.state, "LAB1.1", "lab", "M1", "T", "a", D0, self.rules, hours=1)
-        self.assertFalse(a.module_complete(self.state, SEQUENCE, "M1"))
+        self.assertFalse(a.module_complete(self.state, SEQUENCE, "M1", self.rules))
+
+
+class TestModuleCompleteResubmission(WithState):
+    def setUp(self):
+        super().setUp()
+        w.step_done(self.state, "L1.01")
+        w.step_done(self.state, "L1.02")
+
+    def test_failed_item_with_attempts_left_keeps_module_open(self):
+        graded(self.state, self.rules, "LAB1.1", "lab", "M1", 6)
+        self.assertFalse(a.module_complete(self.state, SEQUENCE, "M1", self.rules))
+
+    def test_failed_item_with_no_attempt_left_closes_module(self):
+        graded(self.state, self.rules, "LAB1.1", "lab", "M1", 6)
+        regraded(self.state, self.rules, "LAB1.1", 7)
+        self.assertTrue(a.module_complete(self.state, SEQUENCE, "M1", self.rules))
+
+    def test_passed_item_closes_module(self):
+        graded(self.state, self.rules, "LAB1.1", "lab", "M1", 12)
+        self.assertTrue(a.module_complete(self.state, SEQUENCE, "M1", self.rules))
 
 
 class TestProvisionalSemester(WithState):

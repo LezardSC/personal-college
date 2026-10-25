@@ -5,7 +5,7 @@ from tools.tests.helpers import D0, SEQUENCE, WithState, graded
 
 class TestAgenda(WithState):
     def agenda(self):
-        return d.agenda(self.state, SEQUENCE, D0)
+        return d.agenda(self.state, SEQUENCE, D0, self.rules)
 
     def test_agenda_keeps_creation_order(self):
         w.add_work(self.state, "LAB1.2", "lab", "M1", "Second", "a", D0, self.rules, hours=10)

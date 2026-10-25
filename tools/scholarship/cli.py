@@ -23,7 +23,7 @@ def _paths(root: Path) -> tuple[Path, Path, Path]:
 
 
 def _write_documents(root: Path, state: dict, sequence: list[dict], rules: dict, today: date) -> None:
-    agenda_text, transcript_text = agenda(state, sequence, today), transcript(state, sequence, rules)
+    agenda_text, transcript_text = agenda(state, sequence, today, rules), transcript(state, sequence, rules)
     (root / "AGENDA.md").write_text(agenda_text, encoding="utf-8")
     (root / "student").mkdir(exist_ok=True)
     (root / "student" / "transcript.md").write_text(transcript_text, encoding="utf-8")
@@ -89,7 +89,7 @@ def execute(args, root: Path, today: date) -> None:
     changed = True
     if args.command == "status":
         changed = False
-        st = status(state, sequence)
+        st = status(state, sequence, rules)
         print(json.dumps(st, ensure_ascii=False, indent=2)) if args.json else _print_status(st)
     elif args.command == "step-done":
         w.step_done(state, args.id)
