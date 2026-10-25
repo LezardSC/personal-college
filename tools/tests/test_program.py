@@ -36,6 +36,50 @@ class TestSequence(Tmp):
             load_sequence(self.write("seq.json", "["))
 
 
+def step(**kw):
+    return {"id": "L1.01", "type": "lesson", "module": "M1", "semester": "S1", "title": "T", **kw}
+
+
+class TestSequenceValidation(Tmp):
+    def assertRejected(self, steps, *needles):
+        with self.assertRaises(CollegeError) as cm:
+            load_sequence(self.write("seq.json", steps))
+        for needle in needles:
+            self.assertIn(needle, str(cm.exception))
+
+    def test_valid_sequence_loads(self):
+        from tools.tests.helpers import SEQUENCE
+        self.assertEqual(load_sequence(self.write("seq.json", SEQUENCE)), SEQUENCE)
+
+    def test_unknown_type(self):
+        self.assertRejected([step(type="quiz")], "L1.01", "type")
+
+    def test_duplicate_ids(self):
+        self.assertRejected([step(), step()], "L1.01", "duplicate")
+
+    def test_bad_semester(self):
+        self.assertRejected([step(semester="1")], "L1.01", "semester")
+
+    def test_lesson_module_format(self):
+        self.assertRejected([step(module="X1")], "L1.01", "module")
+
+    def test_lesson_id_format(self):
+        self.assertRejected([step(id="lesson-1")], "lesson-1", "lesson id")
+
+    def test_exam_module_must_equal_semester(self):
+        self.assertRejected([step(id="EXAM-WRITTEN-S1", type="written-exam", module="M1")],
+                            "EXAM-WRITTEN-S1", "module")
+
+    def test_exam_id_must_match_type(self):
+        self.assertRejected([step(id="EXAM-ORAL-S1", type="written-exam", module="S1")], "EXAM-ORAL-S1")
+
+    def test_exam_id_must_match_semester(self):
+        self.assertRejected([step(id="EXAM-WRITTEN-S2", type="written-exam", module="S1")], "EXAM-WRITTEN-S2")
+
+    def test_non_string_field(self):
+        self.assertRejected([step(title=3)], "L1.01", "string")
+
+
 class TestRules(Tmp):
     def rules(self, content):
         return load_rules(self.write("course.json", content))
@@ -57,6 +101,16 @@ class TestRules(Tmp):
     def test_rules_invalid_json(self):
         with self.assertRaises(CollegeError):
             self.rules("{")
+
+    def test_rules_not_an_object(self):
+        with self.assertRaises(CollegeError) as cm:
+            self.rules("[1, 2]")
+        self.assertIn("object", str(cm.exception))
+
+    def test_rules_duplicate_blocking_refused(self):
+        with self.assertRaises(CollegeError) as cm:
+            self.rules({"blocking": ["lab", "lab"]})
+        self.assertIn("blocking", str(cm.exception))
 
     def test_rules_unknown_key_refused(self):
         with self.assertRaises(CollegeError) as cm:

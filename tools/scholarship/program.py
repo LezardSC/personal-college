@@ -1,7 +1,8 @@
-"""Load the program files: sequence.json and the rules of course.json."""
+"""Load the program files: program/sequence.json and program/rules.json."""
 import copy
 import json
 import math
+import re
 from pathlib import Path
 
 from tools.scholarship.state import CollegeError
@@ -15,6 +16,11 @@ DEFAULT_RULES: dict = {
     "weights": {"modules": 0.6, "exams": 0.4},
 }
 SEQUENCE_KEYS = {"id", "type", "module", "semester", "title"}
+STEP_TYPES = ("lesson", "written-exam", "oral-exam")
+SEMESTER_RE = re.compile(r"S(\d+)")
+MODULE_RE = re.compile(r"M\d+")
+LESSON_ID_RE = re.compile(r"L\d+\.\d+")
+EXAM_ID_RE = re.compile(r"EXAM-(WRITTEN|ORAL)-S(\d+)")
 
 
 def load_sequence(path: Path) -> list[dict]:
@@ -26,7 +32,40 @@ def load_sequence(path: Path) -> list[dict]:
         raise CollegeError(f"Sequence corrupted: {path} ({e}).") from None
     if not isinstance(sequence, list) or not all(isinstance(s, dict) and SEQUENCE_KEYS <= s.keys() for s in sequence):
         raise CollegeError(f"Sequence malformed: {path} (each step needs {', '.join(sorted(SEQUENCE_KEYS))}).")
+    _validate_sequence(sequence, path)
     return sequence
+
+
+def _validate_sequence(sequence: list[dict], path: Path) -> None:
+    seen = set()
+    for step in sequence:
+        sid = step["id"]
+
+        def bad(problem: str) -> CollegeError:
+            return CollegeError(f"Sequence {path}: step \"{sid}\": {problem}.")
+
+        if not all(isinstance(step[k], str) for k in SEQUENCE_KEYS):
+            raise bad("every field must be a string")
+        if sid in seen:
+            raise bad("duplicate id")
+        seen.add(sid)
+        if step["type"] not in STEP_TYPES:
+            raise bad(f"unknown type \"{step['type']}\" (known: {', '.join(STEP_TYPES)})")
+        sem = SEMESTER_RE.fullmatch(step["semester"])
+        if not sem:
+            raise bad(f"semester \"{step['semester']}\" must look like S1")
+        if step["type"] == "lesson":
+            if not MODULE_RE.fullmatch(step["module"]):
+                raise bad(f"module \"{step['module']}\" must look like M1")
+            if not LESSON_ID_RE.fullmatch(sid):
+                raise bad("a lesson id must look like L1.01")
+        else:
+            if step["module"] != step["semester"]:
+                raise bad("an exam's module must equal its semester")
+            exam = EXAM_ID_RE.fullmatch(sid)
+            kind = "WRITTEN" if step["type"] == "written-exam" else "ORAL"
+            if not exam or exam.group(1) != kind or exam.group(2) != sem.group(1):
+                raise bad(f"an exam id must look like EXAM-{kind}-{step['semester']}")
 
 
 def _number(value) -> bool:
@@ -44,6 +83,8 @@ def _validate(rules: dict, path: Path) -> None:
     if not isinstance(blocking, list):
         raise CollegeError(f"Rules {path}: \"blocking\" must be a list of types.")
     _check_types(blocking, "blocking", path)
+    if len(set(blocking)) != len(blocking):
+        raise CollegeError(f"Rules {path}: \"blocking\" lists a type twice.")
 
     coefs = rules["coefficients"]
     if not isinstance(coefs, dict):

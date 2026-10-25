@@ -1,4 +1,5 @@
 """Generated Markdown documents: the agenda and the transcript."""
+import re
 from datetime import date
 
 from tools.scholarship.averages import module_average, module_complete, semester_average, semester_modules
@@ -85,7 +86,7 @@ def transcript(state: dict, sequence: list[dict], rules: dict) -> str:
     for sem in semesters:
         average, provisional = semester_average(state, sequence, sem, rules)
         mention = " (provisional)" if provisional and average is not None else ""
-        lines += [f"## Semester {sem[1:]} — average: {_fmt(average and round(average, 2))}{mention}"
+        lines += [f"## Semester {re.fullmatch(r'S(\d+)', sem).group(1)} — average: {_fmt(average and round(average, 2))}{mention}"
                   f"{_verdict(average)}", ""]
         for module in semester_modules(sequence, sem):
             avg = module_average(state, module)
