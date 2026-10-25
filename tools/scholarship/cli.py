@@ -10,12 +10,19 @@ from tools.scholarship import work as w
 from tools.scholarship.averages import module_average, semester_average
 from tools.scholarship.documents import agenda, transcript
 from tools.scholarship.program import TYPES, load_rules, load_sequence
-from tools.scholarship.state import CollegeError, init, load, save
+from tools.scholarship.state import CollegeError, ensure_course_root, init, load, save
 from tools.scholarship.status import status
 
 
+READ_ONLY = ("status", "averages")
+
+
+def _default_root() -> Path:
+    return Path(__file__).resolve().parents[2]
+
+
 def _root() -> Path:
-    return Path(os.environ.get("COLLEGE_ROOT", Path(__file__).resolve().parents[2]))
+    return Path(os.environ.get("COLLEGE_ROOT") or _default_root())
 
 
 def _paths(root: Path) -> tuple[Path, Path, Path]:
@@ -135,7 +142,10 @@ def execute(args, root: Path, today: date) -> None:
 def main(argv=None) -> int:
     args = _parser().parse_args(argv)
     try:
-        execute(args, _root(), date.today())
+        root = _root()
+        if args.command not in READ_ONLY:
+            ensure_course_root(root, explicit=bool(os.environ.get("COLLEGE_ROOT")))
+        execute(args, root, date.today())
     except CollegeError as e:
         print(f"Error: {e}", file=sys.stderr)
         return 2

@@ -1,9 +1,12 @@
+import contextlib
+import io
 import json
 import os
 import subprocess
 import sys
 import tempfile
 import unittest
+from unittest import mock
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[2]
@@ -29,6 +32,10 @@ class TestCli(unittest.TestCase):
     def write_program(self, name, content):
         (self.dir / "program").mkdir(exist_ok=True)
         (self.dir / "program" / name).write_text(content)
+
+    def test_cli_explicit_root_without_course_md_is_trusted(self):
+        r = self.college("init")  # COLLEGE_ROOT is set, there is no course.md
+        self.assertEqual(r.returncode, 0, r.stderr)
 
     def test_cli_error_without_traceback(self):
         r = self.college("status")
@@ -147,3 +154,30 @@ class TestCli(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TestDefaultRootGuard(unittest.TestCase):
+    """COLLEGE_ROOT unset: the default root (the engine repo) must not receive course files."""
+
+    def run_main(self, *argv):
+        from tools.scholarship import cli
+        tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp.cleanup)
+        env = {k: v for k, v in os.environ.items() if k != "COLLEGE_ROOT"}
+        err = io.StringIO()
+        with mock.patch.dict(os.environ, env, clear=True), \
+                mock.patch.object(cli, "_default_root", return_value=Path(tmp.name)), \
+                contextlib.redirect_stderr(err), contextlib.redirect_stdout(io.StringIO()):
+            code = cli.main(list(argv))
+        return code, err.getvalue(), Path(tmp.name)
+
+    def test_state_changing_command_refused(self):
+        code, err, root = self.run_main("init")
+        self.assertEqual(code, 2)
+        self.assertIn("Error: Not a course (no course.md at", err)
+        self.assertEqual(list(root.iterdir()), [])
+
+    def test_read_only_commands_not_refused_by_guard(self):
+        for cmd in ("status", "averages"):
+            code, err, _ = self.run_main(cmd)
+            self.assertNotIn("Not a course", err, cmd)

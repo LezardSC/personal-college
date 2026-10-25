@@ -3,6 +3,7 @@ import io
 import os
 import tempfile
 import unittest
+from unittest import mock
 from datetime import date
 from pathlib import Path
 
@@ -75,6 +76,14 @@ class TestMain(unittest.TestCase):
         code, _ = self.run_main(["https://x.org/a", "mcp", "intro"], lambda u: HTML)
         self.assertEqual(code, 0)
         self.assertEqual(len(self.files()), 1)
+
+    def test_unset_root_without_course_md_refused(self):
+        os.environ.pop("COLLEGE_ROOT")  # restored by the cleanup registered in setUp
+        with mock.patch.object(sw, "_default_root", return_value=self.root):
+            code, err = self.run_main(["https://x.org/a", "mcp", "intro"], lambda u: HTML)
+        self.assertEqual(code, 2)
+        self.assertIn("Not a course", err)
+        self.assertEqual(self.files(), [])
 
     def test_empty_page_writes_nothing(self):
         code, err = self.run_main(["https://x.org/a", "mcp", "intro"], lambda u: EMPTY)

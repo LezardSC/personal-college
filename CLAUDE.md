@@ -59,7 +59,7 @@ Paths:
 
 ## State tool
 
-`python3 tools/college.py <cmd>` with: `init`, `status [--json]`, `step-done <id>`, `add-work …`, `finish <id>`, `link <reading> <work>`, `submit <id> --path P`, `grade <id> --criteria '<json>' --feedback P`, `averages [--json]`, `agenda`. Never edit `state/state.json` by hand. Every command (`/lesson`, `/submit`, `/oral`, `/ask`) ends with a **local git commit**, which is the progress backup. Never push.
+`python3 tools/college.py <cmd>` with: `init`, `status [--json]`, `step-done <id>`, `add-work …`, `finish <id>`, `link <reading> <work>`, `submit <id> --path P`, `grade <id> --criteria '<json>' --feedback P`, `averages [--json]`, `agenda`. Never edit `state/state.json` by hand. Without `COLLEGE_ROOT`, state-changing commands (and `tools/snapshot_web.py`) refuse to run in a folder with no `course.md` (exit 2), so the engine repo itself never receives course files; `status` and `averages` stay allowed. Every command (`/lesson`, `/submit`, `/oral`, `/ask`) ends with a **local git commit**, which is the progress backup. Never push.
 
 ## Tests
 

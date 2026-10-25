@@ -16,6 +16,15 @@ class CollegeError(Exception):
     """Domain error, with a message readable by the student."""
 
 
+def ensure_course_root(root: Path, explicit: bool) -> None:
+    """Refuse to write into a default root (the engine repo itself) that is not a course.
+
+    An explicit root (COLLEGE_ROOT) is trusted: that is how tests and scratch courses work.
+    """
+    if not explicit and not (Path(root) / "course.md").is_file():
+        raise CollegeError(f"Not a course (no course.md at {root}): run this inside a course created with /enroll.")
+
+
 def init(path: Path, today: date) -> dict:
     """Create the state if absent; never touch an existing one."""
     if path.exists():

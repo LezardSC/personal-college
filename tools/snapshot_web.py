@@ -13,6 +13,10 @@ from pathlib import Path
 
 import trafilatura
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
+from tools.scholarship.state import CollegeError, ensure_course_root  # noqa: E402
+
 SLUG = re.compile(r"[a-z0-9]+(?:-[a-z0-9]+)*")
 
 
@@ -55,9 +59,13 @@ def write_snapshot(root: Path, topic: str, name: str, content: str, refresh: boo
     return path
 
 
+def _default_root() -> Path:
+    return Path(__file__).resolve().parents[1]
+
+
 def _root() -> Path:
     env = os.environ.get("COLLEGE_ROOT")
-    return Path(env) if env else Path(__file__).resolve().parents[1]
+    return Path(env) if env else _default_root()
 
 
 def main(argv=None, fetch=trafilatura.fetch_url) -> int:
@@ -68,6 +76,7 @@ def main(argv=None, fetch=trafilatura.fetch_url) -> int:
     parser.add_argument("--refresh", action="store_true")
     args = parser.parse_args(argv)
     try:
+        ensure_course_root(_root(), explicit=bool(os.environ.get("COLLEGE_ROOT")))
         _check_slug("topic", args.topic)
         _check_slug("name", args.name)
         _check_url(args.url)
@@ -81,6 +90,9 @@ def main(argv=None, fetch=trafilatura.fetch_url) -> int:
         path = write_snapshot(_root(), args.topic, args.name, content, args.refresh)
     except (ValueError, OSError) as e:  # FileExistsError is an OSError
         print(f"snapshot_web: {e}", file=sys.stderr)
+        return 2
+    except CollegeError as e:
+        print(f"Error: {e}", file=sys.stderr)
         return 2
     print(path)
     return 0

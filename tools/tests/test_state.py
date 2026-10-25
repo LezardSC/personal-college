@@ -81,3 +81,18 @@ class TestMigrations(WithState):
                 m_state.load(self.path)
         self.assertIn("corrupted", str(cm.exception))
         self.assertEqual(self.path.read_text(), before)
+
+
+class TestEnsureCourseRoot(WithState):
+    def test_default_root_without_course_md_refused(self):
+        with self.assertRaises(CollegeError) as cm:
+            m_state.ensure_course_root(self.root, explicit=False)
+        self.assertEqual(str(cm.exception), f"Not a course (no course.md at {self.root}): "
+                                            "run this inside a course created with /enroll.")
+
+    def test_default_root_with_course_md_ok(self):
+        (self.root / "course.md").write_text("x")
+        m_state.ensure_course_root(self.root, explicit=False)
+
+    def test_explicit_root_is_trusted(self):
+        m_state.ensure_course_root(self.root, explicit=True)
