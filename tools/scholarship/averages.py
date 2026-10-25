@@ -46,13 +46,18 @@ def semester_average(state: dict, sequence: list[dict], semester: str, rules: di
     """(average, provisional) — provisional until every expected exam is graded."""
     averages = [m for m in (module_average(state, mod) for mod in semester_modules(sequence, semester))
                 if m is not None]
-    exams = [best_grade(item) for item in state["work"].values()
-             if item["module"] == semester and item["type"] in EXAMS and best_grade(item) is not None]
+    # Exam items carry the semester id (`S<n>`) in `module`. Each counts with the coef stored at
+    # creation; mock orals have coef 0 by default, hence are excluded unless the rules say otherwise.
+    in_semester = [i for i in state["work"].values() if i["module"] == semester and best_grade(i) is not None]
+    counted = [i for i in in_semester if i["type"] in EXAMS + ("mock-oral",) and i["coef"] > 0]
+    weight = sum(i["coef"] for i in counted)
+    exam_mean = sum(best_grade(i) * i["coef"] for i in counted) / weight if weight else None
+    graded_exams = sum(1 for i in in_semester if i["type"] in EXAMS)
     expected = sum(1 for s in sequence if s["semester"] == semester and s["type"] in EXAMS)
-    module_mean, exam_mean = _mean(averages), _mean(exams)
+    module_mean = _mean(averages)
     if exam_mean is None:
         return module_mean, True
     if module_mean is None:
         return exam_mean, True
     weights = rules["weights"]
-    return weights["modules"] * module_mean + weights["exams"] * exam_mean, len(exams) < expected
+    return weights["modules"] * module_mean + weights["exams"] * exam_mean, graded_exams < expected

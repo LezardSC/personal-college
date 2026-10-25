@@ -99,3 +99,48 @@ class TestProvisionalSemester(WithState):
         average, provisional = a.semester_average(self.state, SEQUENCE, "S1", self.rules)
         self.assertAlmostEqual(average, 0.6 * 15 + 0.4 * 10)
         self.assertTrue(provisional)
+
+
+class TestExamCoefficients(WithState):
+    def rules_with(self, **coefs):
+        rules = copy.deepcopy(self.rules)
+        rules["coefficients"].update(coefs)
+        return rules
+
+    def test_exam_coefficients_weight_the_exam_part(self):
+        rules = self.rules_with(**{"written-exam": 3, "oral-exam": 1})
+        graded(self.state, rules, "LAB1.1", "lab", "M1", 10)
+        graded(self.state, rules, "EXAM-WRITTEN-S1", "written-exam", "S1", 20)
+        graded(self.state, rules, "EXAM-ORAL-S1", "oral-exam", "S1", 0)
+        average, provisional = a.semester_average(self.state, SEQUENCE, "S1", rules)
+        self.assertAlmostEqual(average, 0.6 * 10 + 0.4 * 15)
+        self.assertFalse(provisional)
+
+    def test_mock_oral_with_coef_counts(self):
+        rules = self.rules_with(**{"mock-oral": 1})
+        graded(self.state, rules, "LAB1.1", "lab", "M1", 10)
+        graded(self.state, rules, "EXAM-WRITTEN-S1", "written-exam", "S1", 10)
+        graded(self.state, rules, "EXAM-ORAL-S1", "oral-exam", "S1", 10)
+        graded(self.state, rules, "MOCK-ORAL-20261020", "mock-oral", "S1", 20)
+        average, provisional = a.semester_average(self.state, SEQUENCE, "S1", rules)
+        self.assertAlmostEqual(average, 0.6 * 10 + 0.4 * (40 / 3))
+        self.assertFalse(provisional)
+
+    def test_mock_oral_with_zero_coef_is_ignored(self):
+        graded(self.state, self.rules, "LAB1.1", "lab", "M1", 10)
+        graded(self.state, self.rules, "EXAM-WRITTEN-S1", "written-exam", "S1", 10)
+        graded(self.state, self.rules, "EXAM-ORAL-S1", "oral-exam", "S1", 10)
+        graded(self.state, self.rules, "MOCK-ORAL-20261020", "mock-oral", "S1", 20)
+        self.assertAlmostEqual(a.semester_average(self.state, SEQUENCE, "S1", self.rules)[0], 10.0)
+
+    def test_mock_oral_alone_does_not_make_exams_complete(self):
+        rules = self.rules_with(**{"mock-oral": 1})
+        graded(self.state, rules, "LAB1.1", "lab", "M1", 10)
+        graded(self.state, rules, "MOCK-ORAL-20261020", "mock-oral", "S1", 20)
+        self.assertTrue(a.semester_average(self.state, SEQUENCE, "S1", rules)[1])
+
+    def test_zero_total_weight_means_no_exam_part(self):
+        rules = self.rules_with(**{"written-exam": 0})
+        graded(self.state, rules, "LAB1.1", "lab", "M1", 15)
+        graded(self.state, rules, "EXAM-WRITTEN-S1", "written-exam", "S1", 2)
+        self.assertEqual(a.semester_average(self.state, SEQUENCE, "S1", rules), (15.0, True))
