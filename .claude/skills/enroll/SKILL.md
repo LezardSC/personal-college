@@ -35,10 +35,10 @@ If not: `python3 -m venv .venv && .venv/bin/pip install -r requirements.txt`, th
 4. **Extract**, only if `resources/text/<slug>.txt` is absent:
    `.venv/bin/python -I tools/extract_pdf.py "resources/books/<name>.pdf" resources/text <slug>`
    It writes `<slug>.txt` (a `=== page N ===` marker per page, N = the page label the student's viewer shows) and `<slug>.toc.md`. A PDF that fails (scanned, encrypted) is reported to the student and left out; do not retry it silently.
-5. **Rebuild the TOC when the PDF has no outline** (the `.toc.md` contains "No outline in this PDF", or only a handful of entries for a long book):
+5. **Rebuild the TOC when the PDF has no outline** (the `.toc.md` contains "No outline in this PDF", or only a handful of entries for a long book). **Skip any `.toc.md` whose first line is `<!-- TOC rebuilt from text -->`**: it was already rebuilt on an earlier run.
    - `grep -nE "^(Chapter|CHAPTER|Part|PART)\b" resources/text/<slug>.txt`, then numbered headings `grep -nE "^[0-9]+(\.[0-9]+)*\s+[A-Z]" …`, then short all-caps lines `grep -nE "^[A-Z][A-Z .,:'-]{3,60}$" …`;
    - **confirm each hit** by reading around it (`sed -n 'a,bp'`): discard running headers, figure captions and index entries; find its page with the nearest preceding `=== page N ===` marker;
-   - overwrite `resources/text/<slug>.toc.md` in the extractor's format (same header, then `- Title — page N`, indented by level) and remember to flag it in step 2 ("TOC rebuilt from text").
+   - overwrite `resources/text/<slug>.toc.md` in the extractor's format, with `<!-- TOC rebuilt from text -->` as its **first line** (then the same header, then `- Title — page N`, indented by level) and remember to flag it in step 2 ("TOC rebuilt from text").
    Never load a whole book into context.
 
 ## 2. Sources
@@ -62,7 +62,7 @@ Write `program/sources.md` (create `program/`), in the teaching language if alre
 
 *Check:* `course.md` and `profile.md` both exist and contain no remaining `<!-- /enroll` placeholder → skip, offer to edit. If one is missing or still has placeholders, interview only for what is missing.
 
-Read the `course.md` and `profile.md` templates of `templates/` (their comments say what each section needs). Ask **one question at a time**, starting from what the intake notes and the books already tell you (propose a draft answer and let the student correct it rather than asking from a blank page). Cover, in this order:
+Read `templates/course.md` and `templates/profile.md` (their comments say what each section needs). Ask **one question at a time**, starting from what the intake notes and the books already tell you (propose a draft answer and let the student correct it rather than asking from a blank page). Cover, in this order:
 
 1. Subject, and the course title.
 2. **Goal and target job.**
@@ -76,7 +76,7 @@ Read the `course.md` and `profile.md` templates of `templates/` (their comments 
 10. **Length:** desired number of semesters and rough duration; this feeds step 4.
 11. **Student profile:** background (facts only), career goal, pace (hours per day or week; information only, there are no due dates). Offer first to **copy `profile.md` from a path the student gives** (another course); then ask only what is still blank or specific to this course.
 
-Then write `course.md` from its template in `templates/` (replace every comment placeholder by the answer, keep the section titles) and `profile.md` from its template (keep the fixed "Memory" paragraph). Show both and let the student correct them.
+Then write **only what is missing or incomplete**. A file that is absent is created from `templates/course.md` (replace every comment placeholder by the answer, keep the section titles) or from `templates/profile.md` (keep the fixed "Memory" paragraph). A file that exists but still has placeholders is **edited in place** (fill the remaining sections only); it is never regenerated from the template. Show both and let the student correct them.
 
 **Rules.** If `program/rules.json` is absent, copy `templates/rules.json` to it (`program/` exists from step 2). Edit it only if the student asks to change a default (blocking types, coefficients, attempts, weights) and keep the **full coefficients table**: the tool rejects a partial one. Show the changed values.
 
@@ -88,7 +88,7 @@ Otherwise propose the structure yourself, from `course.md`, `profile.md`, the TO
 
 ## 5. Syllabus
 
-*Check:* both `program/syllabus.md` and `program/sequence.json` exist → skip. If only one exists, delete neither: relaunch the professor and say it must produce the missing file and check the other.
+*Check:* both `program/syllabus.md` and `program/sequence.json` exist → skip. If only one exists, delete neither: relaunch the professor and say it must produce only the missing file (name it) and must **not modify the existing one** (name it too); you then check both.
 
 Launch the **`professor`** agent (`model: "sonnet"`) with the prompt `syllabus`, followed by: the **approved structure** (modules, semesters, exams, indicative lesson counts), the paths of `course.md`, `profile.md`, `program/sources.md` and `resources/text/*.toc.md`, and today's date. Check afterwards that:
 

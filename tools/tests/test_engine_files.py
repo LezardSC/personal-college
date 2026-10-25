@@ -6,10 +6,20 @@ from pathlib import Path
 from tools.scholarship.program import DEFAULT_RULES
 
 ROOT = Path(__file__).resolve().parents[2]
-FORBIDDEN = [
-    "refactoring.guru", "scol.py", "outils/", "etudiant/", ".enseignants",
-    "UE1", "génie", "cursus", "/cours", "/rendu", "/question",
-]
+FORBIDDEN = [re.compile(r) for r in (
+    r"(?<![\w/.])/cours\b", r"(?<![\w/.])/rendu\b", r"(?<![\w/.])/question\b",
+    r"\bcursus\b", r"\bgénie\b", r"refactoring\.guru", r"\bscol\.py\b",
+    r"\boutils/", r"\betudiant/", r"\.enseignants",
+)]
+FORBIDDEN_CASE_SENSITIVE = re.compile(r"\bUE\d+\b")
+
+
+def forbidden_hits(text: str) -> list[str]:
+    text_l = text.lower()
+    hits = [p.pattern for p in FORBIDDEN if p.search(text_l)]
+    if FORBIDDEN_CASE_SENSITIVE.search(text):
+        hits.append(FORBIDDEN_CASE_SENSITIVE.pattern)
+    return hits
 
 
 def engine_files():
@@ -49,10 +59,14 @@ class TestEngineFiles(unittest.TestCase):
 
     def test_no_subject_obligations(self):
         for path in engine_files():
-            text = path.read_text(encoding="utf-8", errors="ignore").lower()
-            for term in FORBIDDEN:
-                self.assertNotIn(term.lower(), text, f"{path.relative_to(ROOT)} contains '{term}'")
+            text = path.read_text(encoding="utf-8", errors="ignore")
+            self.assertEqual(forbidden_hits(text), [], str(path.relative_to(ROOT)))
 
+    def test_matcher_is_token_based(self):
+        for ok in ("templates/course.md", "value1 queue1", "see /course", "the course"):
+            self.assertEqual(forbidden_hits(ok), [], ok)
+        for bad in ("run /cours now", "UE1", "scol.py", "/rendu x"):
+            self.assertNotEqual(forbidden_hits(bad), [], bad)
 
 if __name__ == "__main__":
     unittest.main()
