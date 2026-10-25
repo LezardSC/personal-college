@@ -1,0 +1,11 @@
+.faculty/
+resources/books/
+resources/text/
+resources/repos/
+former-projects/
+.venv/
+*:Zone.Identifier
+__pycache__/
+target/
+node_modules/
+.superpowers/
