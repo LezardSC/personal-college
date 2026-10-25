@@ -94,7 +94,8 @@ def transcript(state: dict, sequence: list[dict], rules: dict) -> str:
     for sem in semesters:
         average, provisional = semester_average(state, sequence, sem, rules)
         mention = " (provisional)" if provisional and average is not None else ""
-        lines += [f"## Semester {re.fullmatch(r'S(\d+)', sem).group(1)} — average: {_fmt(average and round(average, 2))}{mention}"
+        number = re.fullmatch(r"S(\d+)", sem).group(1)
+        lines += [f"## Semester {number} — average: {_fmt(average and round(average, 2))}{mention}"
                   f"{_verdict(average)}", ""]
         for module in semester_modules(sequence, sem):
             avg = module_average(state, module)

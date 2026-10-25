@@ -1,3 +1,4 @@
+import ast
 import json
 import re
 import unittest
@@ -27,6 +28,25 @@ def engine_files():
     files += [p for p in (ROOT / ".claude").rglob("*") if p.is_file()]
     files += [p for p in (ROOT / "tools").rglob("*.py") if p != Path(__file__).resolve()]
     return [p for p in files if p.exists()]
+
+
+def newer_than_3_10(tree: ast.AST, source: str) -> list[str]:
+    """Syntax that `ast.parse(feature_version=(3, 10))` still accepts on a newer interpreter."""
+    found = []
+    for node in ast.walk(tree):
+        if isinstance(node, ast.JoinedStr):
+            outer = ast.get_source_segment(source, node) or ""
+            quote = re.sub(r"^[a-zA-Z]*", "", outer)[:1]
+            for part in node.values:
+                if isinstance(part, ast.FormattedValue):
+                    inner = ast.get_source_segment(source, part.value) or ""
+                    if "\\" in inner or (quote and quote in inner):
+                        found.append(f"line {part.lineno}: backslash or reused quote in f-string expression")
+        elif isinstance(node, getattr(ast, "TypeAlias", ())):
+            found.append(f"line {node.lineno}: type alias statement")
+        elif getattr(node, "type_params", None):
+            found.append(f"line {node.lineno}: PEP 695 generics")
+    return found
 
 
 class TestEngineFiles(unittest.TestCase):
@@ -68,6 +88,28 @@ class TestEngineFiles(unittest.TestCase):
         for path in engine_files():
             text = path.read_text(encoding="utf-8", errors="ignore")
             self.assertEqual(forbidden_hits(text), [], str(path.relative_to(ROOT)))
+
+    def test_tools_parse_as_python_3_10(self):
+        for path in sorted((ROOT / "tools").rglob("*.py")):
+            if ".venv" in path.parts:
+                continue
+            source = path.read_text(encoding="utf-8")
+            try:
+                tree = ast.parse(source, filename=str(path), feature_version=(3, 10))
+            except SyntaxError as e:
+                self.fail(f"{path.relative_to(ROOT)} is not valid Python 3.10: {e}")
+            self.assertEqual(newer_than_3_10(tree, source), [], str(path.relative_to(ROOT)))
+
+    def test_newer_syntax_detector(self):
+        for bad in ('f"{a[\'x\']!r:{\'\\n\'}}"', "f'{\"\\n\".join(x)}'", 'f"{d["k"]}"',
+                    "type X = int", "def f[T](x): pass", "class C[T]: pass"):
+            self.assertNotEqual(newer_than_3_10(ast.parse(bad), bad), [], bad)
+        for ok in ("f\"{d['k']}\"", "x = 1", "f'{a}\\n'"):
+            self.assertEqual(newer_than_3_10(ast.parse(ok), ok), [], ok)
+
+    def test_engine_repo_has_no_course_files(self):
+        for name in ("state", "AGENDA.md", "student", "lessons", "work", "feedback", "course.md", "profile.md"):
+            self.assertFalse((ROOT / name).exists(), f"{name} must not exist in the engine repo")
 
     def test_matcher_is_token_based(self):
         for ok in ("templates/course.md", "value1 queue1", "see /course", "the course"):
