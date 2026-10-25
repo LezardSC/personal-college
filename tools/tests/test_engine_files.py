@@ -38,8 +38,12 @@ class TestEngineFiles(unittest.TestCase):
             self.assertRegex(front, r"(?m)^model:\s*sonnet\s*$", agent.name)
 
     def test_skills_have_frontmatter(self):
-        for skill in (ROOT / ".claude" / "skills").glob("*/SKILL.md"):
-            front = skill.read_text(encoding="utf-8").split("---")[1]
+        skills = sorted((ROOT / ".claude" / "skills").glob("*/SKILL.md"))
+        self.assertEqual({s.parent.name for s in skills}, {"lesson", "submit", "ask", "oral", "enroll"})
+        for skill in skills:
+            text = skill.read_text(encoding="utf-8")
+            self.assertTrue(text.startswith("---"), f"{skill} must start with '---' (frontmatter)")
+            front = text.split("---")[1]
             self.assertRegex(front, rf"(?m)^name:\s*{re.escape(skill.parent.name)}\s*$", str(skill))
             self.assertRegex(front, r"(?m)^description:\s*\S", str(skill))
 
