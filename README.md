@@ -38,6 +38,7 @@ This only works if the course was created by cloning the engine (shared history,
 - `CLAUDE.md`, `README.md`, `.gitignore`
 - `.claude/agents/` and `.claude/skills/`
 - `tools/`
+- `requirements.txt`
 - `templates/`
 - `docs/` and `LICENSE` (if present)
 

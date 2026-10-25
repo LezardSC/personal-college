@@ -56,7 +56,7 @@ Rule: **every file belongs either to the engine or to the course, never both.** 
 | `README.md` (install, course creation, update, cheat sheet of commands and files) | `profile.md` — the student |
 | `.claude/agents/`, `.claude/skills/` | `program/` — `syllabus.md`, `sequence.json`, `sources.md`, `rules.json` |
 | `tools/` (scholarship tool, PDF extraction, web snapshots, tests) | `resources/` — `books/`, `text/`, `web/`, `repos/`, `links.md` |
-| `.gitignore` | `lessons/`, `assignments/`, `work/`, `feedback/`, `student/`, `state/`, `AGENDA.md`, `.faculty/` (git-ignored) |
+| `.gitignore`, `requirements.txt` | `lessons/`, `assignments/`, `work/`, `feedback/`, `student/`, `state/`, `AGENDA.md`, `.faculty/` (git-ignored) |
 | `templates/` — what `/enroll` copies and fills (`course.md`, `profile.md`, `rules.json`, empty `student/` files, a decision-record template…) | course-level docs, if any |
 | `docs/` (engine design and plans), `LICENSE` | |
 
