@@ -192,4 +192,4 @@ A skill, run in a freshly cloned course (§4.2), in the main session (interactiv
 - TOC reconstruction method (§8.1) and the web snapshot helper's implementation (§8.2).
 - A small script automating §4.2, if useful.
 - `README.md` wording.
-- Licence choice and the first push to GitHub are the owner's decision.
+- Licence: MIT (chosen by the owner). The first push to GitHub is the owner's decision.

@@ -41,7 +41,7 @@ This only works if the course was created by cloning the engine (shared history,
 - `tools/`
 - `requirements.txt`
 - `templates/`
-- `docs/` and `LICENSE` (if present)
+- `docs/` and `LICENSE`
 
 A course-specific need goes through `course.md` (the subject, § Special rules) or `program/rules.json` (the scholarship rules); personal notes go in `CLAUDE.local.md` (git-ignored). If none can express it, the engine itself should evolve.
 
@@ -109,3 +109,7 @@ Defaults are in `templates/rules.json`; a course can override them in `program/r
 ```bash
 .venv/bin/python -m unittest discover -s tools/tests -t .
 ```
+
+## Licence
+
+MIT — see [LICENSE](LICENSE).
