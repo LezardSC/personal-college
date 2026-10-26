@@ -14,17 +14,48 @@ It started as a single-subject prototype built for a self-taught developer with 
 
 ## Create a course
 
-A course is a clone of the engine that shares its git history, so that engine updates can be pulled later. Do not use GitHub's "template" button: it drops the history and updates would fail with "unrelated histories".
+This repository is the **engine**, not a course. Never run `/enroll` inside it (it refuses). Each course is a separate clone of the engine, in its own folder, with one subject and one student. A clone keeps the engine's git history, so engine updates can be pulled later. Do not use GitHub's "template" button: it drops the history and updates would fail with "unrelated histories".
+
+### 1. Clone the engine under the course's name
+
+Run this from a parent folder, not from inside the engine:
 
 ```bash
-git clone <engine-repo-url> my-course && cd my-course
-git remote rename origin engine
+git clone https://github.com/LezardSC/Personal-College.git my-course && cd my-course
+git remote rename origin engine               # required: this is what `git pull engine main` uses later
 git remote add origin <your private repo>     # optional
 python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
+```
+
+Replace `my-course` with your course's name. If you already have a local copy of the engine, you can clone from its path instead of the URL. The original is left untouched, so you can create as many courses as you like.
+
+### 2. Prepare your material
+
+`/enroll` asks for these. Having them ready makes it faster:
+
+| What | Required? | Format |
+|---|---|---|
+| Books | No, but recommended | A folder of PDF files. Under WSL, a Windows folder is `/mnt/c/Users/<you>/...`. |
+| Links | No | A text or Markdown file, one URL per line (docs, tutorials, repositories). Without it, the course uses the books only. |
+| Intake notes | No | A free-form file: what you want to learn, why, your current level, what you already know. The more it says, the fewer questions `/enroll` asks. |
+
+The books and links are copied into `resources/` inside the course. Your originals are never moved or modified.
+
+### 3. Start Claude Code and enroll
+
+```bash
 claude
 ```
 
-Then type `/enroll`. It asks for a folder of PDF books and a file of links (and optionally intake notes), extracts the texts, interviews you, proposes a program structure for your approval, and has the professor write the syllabus. It is resumable: if it is interrupted, run `/enroll` again. When it is done, `/lesson` is ready.
+Then type `/enroll`. The three inputs above can be given as arguments, in this order: `/enroll <pdf folder> <links file> <intake notes>`. Anything you leave out, it asks for. It then:
+
+1. extracts the text of each PDF;
+2. catalogues your sources;
+3. interviews you, one question at a time (goal, teaching language, starting level, tools, oral exam format, ...);
+4. proposes a program structure for your approval;
+5. has the professor write the syllabus.
+
+It is resumable: if it is interrupted, run `/enroll` again and it picks up where it stopped. When it is done, `/lesson` is ready (see [Commands](#commands) and [A typical day](#a-typical-day)).
 
 Nothing is ever pushed automatically. Pushing your course to your own repository is your decision.
 
