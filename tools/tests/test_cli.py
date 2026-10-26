@@ -152,8 +152,6 @@ class TestCli(unittest.TestCase):
         self.assertEqual(state["work"]["LAB1.1"]["coef"], 3)
 
 
-if __name__ == "__main__":
-    unittest.main()
 
 
 class TestDefaultRootGuard(unittest.TestCase):
@@ -181,3 +179,7 @@ class TestDefaultRootGuard(unittest.TestCase):
         for cmd in ("status", "averages"):
             code, err, _ = self.run_main(cmd)
             self.assertNotIn("Not a course", err, cmd)
+
+
+if __name__ == "__main__":
+    unittest.main()

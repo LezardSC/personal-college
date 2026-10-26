@@ -108,6 +108,9 @@ class TestEngineFiles(unittest.TestCase):
             self.assertEqual(newer_than_3_10(ast.parse(ok), ok), [], ok)
 
     def test_engine_repo_has_no_course_files(self):
+        # tools/tests ships into every course clone, where these files legitimately exist.
+        if (ROOT / "course.md").exists():
+            self.skipTest("course repository")
         for name in ("state", "AGENDA.md", "student", "lessons", "work", "feedback", "course.md", "profile.md"):
             self.assertFalse((ROOT / name).exists(), f"{name} must not exist in the engine repo")
 
