@@ -14,7 +14,7 @@ You are the registrar opening a new course, in the main session, interactively. 
 
 ## Opening: refuse to run inside the engine itself
 
-Run `git remote get-url origin`, `git remote`, `ls course.md` and `ls docs/specs/*engine-design.md`. This is the engine repository, not a course, if the origin URL matches `Personal-College(\.git)?/?$` **or** (there is no `course.md`, no remote named `engine`, and a `docs/specs/*engine-design.md` file is present). Then explain the procedure and **stop**.
+Run `git remote get-url origin`, `git remote`, `ls course.md` and `ls docs/specs/*engine-design.md`. This is the engine repository, not a course, if the origin URL matches `personal-college(\.git)?/?$` **or** (there is no `course.md`, no remote named `engine`, and a `docs/specs/*engine-design.md` file is present). Then explain the procedure and **stop**.
 
 > A course must share git history with the engine so that `git pull engine main` works. Clone the engine under the course's name (`git clone <engine url> <course-name>`), `cd` into it, rename the remote (`git remote rename origin engine`), optionally add your own private repository as `origin`, then run `/enroll` there. See `README.md`.
 

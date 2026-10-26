@@ -1,4 +1,4 @@
-# Personal-College Engine Implementation Plan
+# personal-college Engine Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
@@ -273,7 +273,7 @@ Same translation rule and substitution table as Task 8, plus:
 - Create: `.claude/skills/enroll/SKILL.md`
 
 Implements spec §9 in the main session (interactive). Required content:
-- Opening: refuse to run inside the engine repository itself — if `git remote get-url origin` ends with `Personal-College.git` and no `engine` remote exists, explain the §4.2 clone procedure and stop.
+- Opening: refuse to run inside the engine repository itself — if `git remote get-url origin` ends with `personal-college.git` and no `engine` remote exists, explain the §4.2 clone procedure and stop.
 - Step 0: ensure `.venv` with `requirements.txt` installed.
 - Steps 1–6 as in §9, each beginning with an existence check and skipping when its output exists: PDFs copied only if `resources/books/<name>` is absent; extraction only if `resources/text/<slug>.txt` is absent; `program/sources.md`, `course.md`, `profile.md`, `program/syllabus.md`, `program/sequence.json`, `state/state.json` never overwritten (offer to edit instead).
 - Slugs: short, lowercase, hyphenated, unique; never shown to the student (citation rules as in the prototype `programme/sources.md`, translated — copy that method section into the generated `program/sources.md`).
@@ -305,7 +305,7 @@ Sections: what it is (anonymous origin story from spec §1, two sentences); requ
 No new files in the repo.
 
 - [ ] **Step 1: Full suite** `.venv/bin/python -m unittest discover -s tools/tests -t .` → all pass.
-- [ ] **Step 2: Conflict-free update** (scratch, outside the repo): `git clone ~/Personal-College /tmp/pc-course && cd /tmp/pc-course && git switch engine-v1 && git remote rename origin engine`; create course-owned files (`course.md`, `profile.md`, `program/sequence.json` with two lessons, run `python3 tools/college.py init` and one `add-work`), commit. In `~/Personal-College` on `engine-v1`, make a dummy commit touching `README.md` and `.claude/skills/lesson/SKILL.md`. In `/tmp/pc-course`: `git pull engine engine-v1` → merge without conflict; `python3 tools/college.py status` still works. Then `git -C ~/Personal-College reset --hard HEAD~1` to drop the dummy commit and `rm -rf /tmp/pc-course`.
+- [ ] **Step 2: Conflict-free update** (scratch, outside the repo): `git clone ~/personal-college /tmp/pc-course && cd /tmp/pc-course && git switch engine-v1 && git remote rename origin engine`; create course-owned files (`course.md`, `profile.md`, `program/sequence.json` with two lessons, run `python3 tools/college.py init` and one `add-work`), commit. In `~/personal-college` on `engine-v1`, make a dummy commit touching `README.md` and `.claude/skills/lesson/SKILL.md`. In `/tmp/pc-course`: `git pull engine engine-v1` → merge without conflict; `python3 tools/college.py status` still works. Then `git -C ~/personal-college reset --hard HEAD~1` to drop the dummy commit and `rm -rf /tmp/pc-course`.
 - [ ] **Step 3: Prototype untouched**: `git -C ~/engineer-class status --short` → empty, and `git -C ~/engineer-class log --since=2026-10-25 --format=%s` shows no commit from this work (the student's own `lesson`/`submit`-style commits in French are fine).
 - [ ] **Step 4: Privacy and neutrality**: private-terms grep → nothing; `test_no_subject_obligations` passes; `grep -rn 'model:' .claude/agents` → three `model: sonnet`.
 - [ ] **Step 5: Report** to the owner: test count, the update check result, and that nothing was pushed. Do not merge `engine-v1` into `main` or push without the owner's go-ahead (use superpowers:finishing-a-development-branch).

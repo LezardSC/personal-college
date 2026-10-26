@@ -1,10 +1,10 @@
-# Personal-College — Engine Design
+# personal-college — Engine Design
 
 *Date: 2026-10-25*
 
 ## 1. Intent
 
-Personal-College turns Claude Code into a **personal university**: for one student, on one subject, it delivers a full curriculum that feels like real higher education, not like chatting with a bot. Written lessons, assigned work, readings, homework, labs, written and oral exams, grades out of 20 against a rubric written *before* the student's copy is seen, resits, spaced revision, and a student record that remembers everything.
+personal-college turns Claude Code into a **personal university**: for one student, on one subject, it delivers a full curriculum that feels like real higher education, not like chatting with a bot. Written lessons, assigned work, readings, homework, labs, written and oral exams, grades out of 20 against a rubric written *before* the student's copy is seen, resits, spaced revision, and a student record that remembers everything.
 
 It was born as a single-subject prototype (a software engineering curriculum, in a private repository called `engineer-class`) built for a self-taught developer: lots of practice, no theory, a poor memory for past work, and one goal — get hired by learning to **make a technical decision and defend it**, in writing and in interviews. The prototype works. Its student now wants the same experience for other subjects, starting with applied AI (LLMs, agents, automation), and wants to open-source it so others can do the same with their own books and links.
 
@@ -50,7 +50,7 @@ Two projects follow, in order:
 
 Rule: **every file belongs either to the engine or to the course, never both.** This is what makes pulls conflict-free.
 
-| Engine-owned (versioned in Personal-College) | Course-owned (never present in the engine) |
+| Engine-owned (versioned in personal-college) | Course-owned (never present in the engine) |
 |---|---|
 | `CLAUDE.md` (generic; imports `@course.md` and `@profile.md`) | `course.md` — the subject (§5) |
 | `README.md` (install, course creation, update, cheat sheet of commands and files) | `profile.md` — the student |
@@ -61,12 +61,12 @@ Rule: **every file belongs either to the engine or to the course, never both.** 
 | `docs/` (engine design and plans), `LICENSE` | |
 
 - `CLAUDE.md` is auto-loaded by Claude Code. It holds the shared rules (roles, who reads what, scholarship rules, IDs, paths, state tool, commits) and imports `course.md` and `profile.md`. Agents already read `CLAUDE.md` first and will follow the imports.
-- A course never edits an engine file. A course-specific need goes through `course.md` or `rules.json`; if that's impossible, the engine evolves, in Personal-College.
+- A course never edits an engine file. A course-specific need goes through `course.md` or `rules.json`; if that's impossible, the engine evolves, in personal-college.
 - **Why course folders are not git-ignored by the engine:** a course is a clone of the engine and inherits its `.gitignore`. Ignoring `lessons/` or `state/` there would silently stop backing up the student's progress. The engine repository stays clean by construction, because course content is only ever created inside course repositories.
 
 ### 4.2 Creating and updating a course
 
-- A course must **share git history** with the engine, or `git pull` fails ("unrelated histories"); GitHub's *template* button does not share history. Procedure: clone Personal-College under the course's name, rename the remote to `engine`, optionally add the student's own (private) repository as `origin`. Documented in `README.md`.
+- A course must **share git history** with the engine, or `git pull` fails ("unrelated histories"); GitHub's *template* button does not share history. Procedure: clone personal-college under the course's name, rename the remote to `engine`, optionally add the student's own (private) repository as `origin`. Documented in `README.md`.
 - Update: `git pull engine main`. Engine updates only touch engine-owned files.
 - Command commits stay **local**. Nothing is ever pushed automatically.
 

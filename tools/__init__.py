@@ -1,1 +1,1 @@
-"""Personal-College tools."""
+"""personal-college tools."""
