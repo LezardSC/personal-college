@@ -4,6 +4,8 @@ Personal College turns [Claude Code](https://claude.com/claude-code) into a pers
 
 It started as a single-subject prototype built for a self-taught developer with lots of practice, little theory and a poor memory for past work. The goal was to learn to make a technical decision and defend it, in writing and in interviews. This repository is the subject-independent engine extracted from that prototype, so you can run the same experience on your own books and links.
 
+![Personal College demo](demo/brag.gif)
+
 ## Requirements
 
 - [Claude Code](https://claude.com/claude-code)
